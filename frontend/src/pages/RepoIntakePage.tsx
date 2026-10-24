@@ -16,6 +16,13 @@ import {
   ArrowRight,
   RefreshCw,
   ExternalLink,
+  Clock,
+  Sparkles,
+  Play,
+  FileText,
+  AlertCircle,
+  HelpCircle,
+  Loader2,
 } from 'lucide-react';
 import { api } from '../api/client';
 import {
@@ -25,6 +32,11 @@ import {
   RepoPatchVerifyResponse,
   RepoPublishResponse,
 } from '../types';
+import { SectionHeader } from '../components/ui/SectionHeader';
+import { TerminalPanel } from '../components/ui/TerminalPanel';
+import { DiffViewer } from '../components/DiffViewer';
+import { VerificationVerdict } from '../components/ui/VerificationVerdict';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
 
 interface RepoIntakePageProps {
   onSelectExperiment?: (id: number) => void;
@@ -34,7 +46,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
   const [repoUrl, setRepoUrl] = useState('https://github.com/pallets/flask');
   const [projectRoot, setProjectRoot] = useState('/');
   const [targetBranch, setTargetBranch] = useState('');
-  
+
   // Intake & Inspection state
   const [isInspecting, setIsInspecting] = useState(false);
   const [inspectionResult, setInspectionResult] = useState<ProjectInspectionResult | null>(null);
@@ -84,6 +96,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
     setDiagnosisResult(null);
     setVerifyResult(null);
     setPublishResult(null);
+    setPatchAuthorized(false);
 
     try {
       const res = await api.intakeRepo(repoUrl.trim(), projectRoot, targetBranch || undefined);
@@ -180,52 +193,69 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header Banner */}
-      <div className="bg-canvas-subtle border border-canvas-border rounded-lg p-6">
-        <div className="flex items-center space-x-3 mb-2">
-          <div className="p-2 rounded bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos">
-            <GitBranch className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-text-primary">
-              Universal Public GitHub Repository Mode
+    <div className="space-y-8 font-mono pb-16">
+      {/* Signature Header Banner */}
+      <div className="rounded-2xl border border-canvas-border bg-gradient-to-r from-canvas-card via-[#111828] to-[#0A0E1A] p-6 sm:p-8 shadow-glow-card">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos text-xs font-bold uppercase tracking-wider">
+              <GitBranch className="w-4 h-4" />
+              <span>Universal Public GitHub Mode</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight">
+              Sequential Repository Repair Workbench
             </h1>
-            <p className="text-xs text-text-muted mt-0.5">
-              Repository-Agnostic AI Reliability, Docker Isolation & Verified Repair Engine
+            <p className="text-xs text-text-secondary leading-relaxed max-w-3xl">
+              Inspect public repositories, execute safe bounded baseline checks inside disposable Docker sandboxes
+              (<code className="text-accent-chaos">--network none</code>), collect sanitized evidence, synthesize
+              AI repair patches, and independently test recovery before export or branch publishing.
             </p>
           </div>
+
+          {inspectionResult && (
+            <div className="p-3 rounded-xl bg-[#080B12] border border-canvas-border shrink-0 text-right">
+              <div className="text-[10px] text-text-muted uppercase">ACTIVE EXPERIMENT</div>
+              <div className="text-sm font-bold text-accent-chaos">#EXP-{inspectionResult.experiment_id}</div>
+              <div className="text-[10px] text-text-muted truncate max-w-[140px]">
+                {inspectionResult.owner}/{inspectionResult.name}
+              </div>
+            </div>
+          )}
         </div>
-        <p className="text-xs text-text-secondary leading-relaxed max-w-4xl">
-          Submit any public GitHub repository URL. CHAOSPATCH detects project technology manifests, executes
-          safe bounded baseline checks inside disposable Docker sandboxes (<span className="font-mono text-accent-cyan">--network none</span>),
-          collects sanitized evidence, requests structured AI repair hypotheses, and independently verifies
-          patches before offering export or authorized branch publishing.
-        </p>
       </div>
 
-      {/* Repository Intake Bar */}
-      <div className="bg-canvas-subtle border border-canvas-border rounded-lg p-5">
+      {/* SECTION 1 — Repository Intake Bar */}
+      <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center space-x-2 border-b border-canvas-border pb-3">
+          <span className="w-6 h-6 rounded-full bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos text-xs font-bold flex items-center justify-center">
+            1
+          </span>
+          <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+            Repository Intake & Cloning
+          </h2>
+        </div>
+
         <form onSubmit={handleInspect} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono font-medium text-text-secondary mb-1.5">
-              PUBLIC GITHUB REPOSITORY HTTPS URL
+            <label className="block text-xs text-text-secondary mb-1.5 uppercase font-medium">
+              Public GitHub HTTPS URL
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 text-text-muted absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-text-muted absolute left-3.5 top-3" />
                 <input
                   type="text"
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
                   placeholder="https://github.com/owner/repository"
-                  className="w-full bg-canvas border border-canvas-border rounded pl-9 pr-3 py-2 text-xs font-mono text-text-primary placeholder:text-text-muted/60 focus:outline-none focus:border-accent-chaos"
+                  className="w-full bg-[#070A10] border border-canvas-border rounded-lg pl-10 pr-3 py-2.5 text-xs text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-accent-chaos transition"
                 />
               </div>
+
               <button
                 type="submit"
                 disabled={isInspecting || !repoUrl.trim()}
-                className="px-4 py-2 bg-accent-chaos hover:bg-accent-chaos/90 disabled:opacity-50 text-canvas font-mono font-bold text-xs rounded transition flex items-center space-x-2"
+                className="px-6 py-2.5 bg-accent-chaos hover:bg-amber-400 disabled:opacity-50 text-canvas font-bold text-xs rounded-lg transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-glow-amber shrink-0"
               >
                 {isInspecting ? (
                   <>
@@ -243,512 +273,598 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
           </div>
 
           {/* Quick Samples */}
-          <div className="flex items-center space-x-2 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-text-muted text-[11px]">Quick Samples:</span>
             {quickSamples.map((sample) => (
               <button
                 key={sample.url}
                 type="button"
                 onClick={() => setRepoUrl(sample.url)}
-                className="px-2 py-0.5 rounded bg-canvas border border-canvas-border text-text-secondary hover:text-text-primary hover:border-text-muted text-[11px] transition"
+                className="px-2.5 py-1 rounded-md bg-[#070A10] border border-canvas-border text-text-secondary hover:text-text-primary hover:border-accent-chaos/40 text-[11px] transition cursor-pointer"
               >
                 {sample.label}
               </button>
             ))}
           </div>
 
-          {/* Advanced Intake Options */}
-          <div className="pt-2 border-t border-canvas-border grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Subdirectory & Branch inputs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div>
-              <label className="block text-[11px] font-mono text-text-muted mb-1">
-                PROJECT ROOT SUBDIRECTORY (FOR MONOREPOS)
+              <label className="block text-[11px] text-text-muted mb-1">
+                Project Root Subdirectory (for monorepos)
               </label>
               <input
                 type="text"
                 value={projectRoot}
                 onChange={(e) => setProjectRoot(e.target.value)}
                 placeholder="/"
-                className="w-full bg-canvas border border-canvas-border rounded px-2.5 py-1.5 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-chaos"
+                className="w-full bg-[#070A10] border border-canvas-border rounded-md px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent-chaos"
               />
             </div>
+
             <div>
-              <label className="block text-[11px] font-mono text-text-muted mb-1">
-                TARGET BRANCH OR COMMIT (OPTIONAL)
+              <label className="block text-[11px] text-text-muted mb-1">
+                Optional Target Branch or Commit SHA
               </label>
               <input
                 type="text"
                 value={targetBranch}
                 onChange={(e) => setTargetBranch(e.target.value)}
-                placeholder="Default Branch"
-                className="w-full bg-canvas border border-canvas-border rounded px-2.5 py-1.5 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-chaos"
+                placeholder="main (defaults to repository default)"
+                className="w-full bg-[#070A10] border border-canvas-border rounded-md px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent-chaos"
               />
             </div>
           </div>
-        </form>
 
-        {intakeError && (
-          <div className="mt-4 p-3 rounded bg-accent-crimson/10 border border-accent-crimson/30 text-accent-crimson text-xs font-mono flex items-center space-x-2">
-            <XCircle className="w-4 h-4 shrink-0" />
-            <span>{intakeError}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Card 1: Project & Technology Stack Inspection */}
-      {inspectionResult && (
-        <div className="bg-canvas-subtle border border-canvas-border rounded-lg p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-canvas-border pb-3">
-            <div className="flex items-center space-x-2.5">
-              <span className="w-6 h-6 rounded-full bg-accent-cyan/15 text-accent-cyan flex items-center justify-center text-xs font-mono font-bold">
-                1
-              </span>
-              <h2 className="text-sm font-bold font-mono text-text-primary">
-                PROJECT DETECTION & ADAPTER CAPABILITIES
-              </h2>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-accent-cyan/15 text-accent-cyan border border-accent-cyan/30">
-                {inspectionResult.primary_language}
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-canvas border border-canvas-border text-text-secondary">
-                Branch: {inspectionResult.default_branch}
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-canvas border border-canvas-border text-text-secondary">
-                Commit: {inspectionResult.base_commit_sha.slice(0, 8)}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-            <div className="bg-canvas p-3 rounded border border-canvas-border">
-              <div className="text-text-muted text-[11px] mb-1">TARGET REPOSITORY</div>
-              <div className="font-bold text-text-primary truncate">
-                {inspectionResult.owner}/{inspectionResult.name}
-              </div>
-              <div className="text-[10px] text-text-muted mt-1 truncate">
-                {inspectionResult.repo_url}
-              </div>
-            </div>
-
-            <div className="bg-canvas p-3 rounded border border-canvas-border">
-              <div className="text-text-muted text-[11px] mb-1">DETECTED MANIFESTS & FRAMEWORKS</div>
-              <div className="font-bold text-text-primary truncate">
-                {inspectionResult.manifest_files.join(', ') || 'Standard Layout'}
-              </div>
-              <div className="text-[10px] text-text-muted mt-1">
-                Test Runner: {inspectionResult.test_framework || 'Auto-Detected'}
-              </div>
-            </div>
-
-            <div className="bg-canvas p-3 rounded border border-canvas-border">
-              <div className="text-text-muted text-[11px] mb-1">SANDBOX EXECUTION ADAPTER</div>
-              <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-accent-amber animate-pulse" />
-                <span className="font-bold text-accent-amber">
-                  {inspectionResult.capabilities.isolation_mode}
-                </span>
-              </div>
-              <div className="text-[10px] text-text-muted mt-1">
-                {inspectionResult.capabilities.notes || 'Full container isolation enabled.'}
-              </div>
-            </div>
-          </div>
-
-          {/* Action to trigger baseline checks */}
-          <div className="flex justify-end pt-2">
-            <button
-              onClick={handleRunBaseline}
-              disabled={isRunningBaseline}
-              className="px-4 py-2 bg-accent-cyan hover:bg-accent-cyan/90 disabled:opacity-50 text-canvas font-mono font-bold text-xs rounded transition flex items-center space-x-2"
-            >
-              {isRunningBaseline ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Executing Docker Baseline Tests...</span>
-                </>
-              ) : (
-                <>
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>Run Isolated Baseline Checks</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {baselineError && (
-            <div className="p-3 rounded bg-accent-crimson/10 border border-accent-crimson/30 text-accent-crimson text-xs font-mono flex items-center space-x-2">
-              <XCircle className="w-4 h-4 shrink-0" />
-              <span>{baselineError}</span>
+          {intakeError && (
+            <div className="p-3.5 rounded-lg bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-xs flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{intakeError}</span>
             </div>
           )}
-        </div>
-      )}
+        </form>
+      </section>
 
-      {/* Card 2: Baseline Checks & Sanitized Evidence */}
-      {baselineResult && (
-        <div className="bg-canvas-subtle border border-canvas-border rounded-lg p-5 space-y-4">
+      {/* SECTION 2 — Project Inspection Results */}
+      {inspectionResult && (
+        <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-canvas-border pb-3">
-            <div className="flex items-center space-x-2.5">
-              <span className="w-6 h-6 rounded-full bg-accent-amber/15 text-accent-amber flex items-center justify-center text-xs font-mono font-bold">
+            <div className="flex items-center space-x-2">
+              <span className="w-6 h-6 rounded-full bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos text-xs font-bold flex items-center justify-center">
                 2
               </span>
-              <h2 className="text-sm font-bold font-mono text-text-primary">
-                BASELINE EVIDENCE & REPRODUCIBILITY STATUS
+              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                Project Manifest & Capability Inspection
               </h2>
             </div>
-            <div className="flex items-center space-x-2">
-              <span
-                className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold ${
-                  baselineResult.baseline_status === 'FAILURE_REPRODUCED'
-                    ? 'bg-accent-crimson/15 text-accent-crimson border border-accent-crimson/30'
-                    : baselineResult.baseline_status === 'BASELINE_PASSED'
-                    ? 'bg-accent-amber/15 text-accent-amber border border-accent-amber/30'
-                    : 'bg-canvas border border-canvas-border text-text-muted'
-                }`}
-              >
-                {baselineResult.baseline_status}
-              </span>
-              <span className="text-xs font-mono text-text-muted">
-                {baselineResult.duration_ms}ms | Exit {baselineResult.exit_code}
-              </span>
+            <span className="text-[10px] text-text-muted">
+              Canonical: <code className="text-text-secondary">{inspectionResult.canonical_id}</code>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-lg bg-[#070A10] border border-canvas-border">
+              <div className="text-[10px] text-text-muted uppercase">Language / Stack</div>
+              <div className="font-bold text-accent-chaos mt-1 truncate">
+                {inspectionResult.primary_language || 'Unknown'}
+              </div>
+              <div className="text-[10px] text-text-muted mt-0.5 truncate">
+                {inspectionResult.detected_frameworks?.join(', ') || 'No framework detected'}
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[#070A10] border border-canvas-border">
+              <div className="text-[10px] text-text-muted uppercase">Target Branch</div>
+              <div className="font-bold text-text-primary mt-1 truncate">
+                {inspectionResult.default_branch || 'HEAD'}
+              </div>
+              <div className="text-[10px] text-text-muted mt-0.5 truncate">
+                SHA: <code className="text-text-secondary">{inspectionResult.base_commit_sha?.substring(0, 7) || 'N/A'}</code>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[#070A10] border border-canvas-border">
+              <div className="text-[10px] text-text-muted uppercase">Detected Runner</div>
+              <div className="font-bold text-text-primary mt-1 truncate">
+                {inspectionResult.test_framework || 'Auto-detected'}
+              </div>
+              <div className="text-[10px] text-accent-cyan mt-0.5 truncate font-mono">
+                {inspectionResult.test_command || 'default test suite'}
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[#070A10] border border-canvas-border">
+              <div className="text-[10px] text-text-muted uppercase">Sandbox Adapter</div>
+              <div className="font-bold text-accent-success mt-1 flex items-center space-x-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{inspectionResult.capabilities?.isolation_mode || 'DOCKER'}</span>
+              </div>
+              <div className="text-[10px] text-text-muted mt-0.5">
+                {inspectionResult.capabilities?.can_run_tests ? 'Test execution supported' : 'Manual runner'}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-text-muted">
-              <span>CONTAINER TEST EXECUTION OUTPUT (BOUNDED & SANITIZED)</span>
-              <span>{baselineResult.evidence_count} evidence items recorded</span>
-            </div>
-            <pre className="p-3 rounded bg-canvas border border-canvas-border text-[11px] font-mono text-text-secondary overflow-x-auto max-h-48 whitespace-pre-wrap leading-relaxed">
-              {baselineResult.output_excerpt || 'No output recorded'}
-            </pre>
-          </div>
-
-          {/* Action to trigger AI diagnosis */}
-          <div className="flex justify-end pt-2">
-            <button
-              onClick={handleDiagnoseAndPatch}
-              disabled={isDiagnosing}
-              className="px-4 py-2 bg-accent-chaos hover:bg-accent-chaos/90 disabled:opacity-50 text-canvas font-mono font-bold text-xs rounded transition flex items-center space-x-2"
-            >
-              {isDiagnosing ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Requesting AI Diagnosis (NVIDIA NIM)...</span>
-                </>
-              ) : (
-                <>
-                  <Cpu className="w-3.5 h-3.5" />
-                  <span>Generate AI Diagnosis & Patch</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {diagnosisError && (
-            <div className="p-3 rounded bg-accent-crimson/10 border border-accent-crimson/30 text-accent-crimson text-xs font-mono flex items-center space-x-2">
-              <XCircle className="w-4 h-4 shrink-0" />
-              <span>{diagnosisError}</span>
+          {/* Manifest files badge row */}
+          {inspectionResult.manifest_files && inspectionResult.manifest_files.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+              <span className="text-[10px] text-text-muted uppercase font-bold">Manifest Files:</span>
+              {inspectionResult.manifest_files.map((file) => (
+                <span
+                  key={file}
+                  className="px-2 py-0.5 rounded bg-canvas-surface border border-canvas-border text-[11px] text-text-secondary"
+                >
+                  {file}
+                </span>
+              ))}
             </div>
           )}
-        </div>
+
+          {/* Action to proceed to baseline */}
+          {!baselineResult && (
+            <div className="pt-3 border-t border-canvas-border flex justify-end">
+              <button
+                onClick={handleRunBaseline}
+                disabled={isRunningBaseline}
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-chaos hover:bg-amber-400 text-canvas font-bold text-xs transition cursor-pointer shadow-glow-amber"
+              >
+                {isRunningBaseline ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Executing Docker Sandbox Baseline...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5" />
+                    <span>Run Baseline Checks</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </section>
       )}
 
-      {/* Card 3: AI Diagnosis & Proposed Patch Review */}
-      {diagnosisResult && (
-        <div className="bg-canvas-subtle border border-canvas-border rounded-lg p-5 space-y-4">
+      {/* SECTION 3 — Baseline Evidence & Terminal Output */}
+      {(baselineResult || isRunningBaseline || baselineError) && (
+        <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-canvas-border pb-3">
-            <div className="flex items-center space-x-2.5">
-              <span className="w-6 h-6 rounded-full bg-accent-chaos/15 text-accent-chaos flex items-center justify-center text-xs font-mono font-bold">
+            <div className="flex items-center space-x-2">
+              <span className="w-6 h-6 rounded-full bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos text-xs font-bold flex items-center justify-center">
                 3
               </span>
-              <h2 className="text-sm font-bold font-mono text-text-primary">
-                PROPOSED REPAIR PATCH & SAFETY ANALYSIS
+              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                Baseline Evidence & Sandbox Execution
               </h2>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-canvas border border-canvas-border text-text-secondary">
-                Confidence: {Math.round(diagnosisResult.confidence * 100)}%
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-accent-chaos/15 text-accent-chaos border border-accent-chaos/30">
-                {diagnosisResult.provider}
-              </span>
-            </div>
+
+            {baselineResult && (
+              <StatusIndicator status={baselineResult.baseline_status} size="sm" />
+            )}
           </div>
 
-          <div className="space-y-3 text-xs font-mono">
-            <div className="bg-canvas p-3 rounded border border-canvas-border space-y-1">
-              <div className="font-bold text-text-primary">{diagnosisResult.title}</div>
-              <div className="text-text-secondary">{diagnosisResult.root_cause}</div>
-              <div className="text-text-muted text-[11px] pt-1">{diagnosisResult.explanation}</div>
-            </div>
-
-            {/* Unified Diff Viewer */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-text-muted text-[11px]">
-                <span>VALIDATED UNIFIED DIFF</span>
-                <span className="text-accent-amber">{diagnosisResult.risk_summary}</span>
+          {isRunningBaseline ? (
+            <div className="p-8 rounded-xl bg-[#070A10] border border-canvas-border text-center space-y-3">
+              <Loader2 className="w-6 h-6 text-accent-chaos animate-spin mx-auto" />
+              <div className="text-xs text-text-secondary">
+                Spinning up isolated Docker container, resolving dependencies, and capturing baseline stdout/stderr...
               </div>
-              <pre className="p-3 rounded bg-[#0a0c10] border border-canvas-border text-[11px] font-mono text-text-primary overflow-x-auto max-h-56 whitespace-pre-wrap leading-relaxed">
-                {diagnosisResult.proposed_patch_diff.split('\n').map((line, idx) => {
-                  let colorClass = 'text-text-secondary';
-                  if (line.startsWith('+') && !line.startsWith('+++')) colorClass = 'text-accent-amber font-semibold';
-                  if (line.startsWith('-') && !line.startsWith('---')) colorClass = 'text-accent-crimson font-semibold';
-                  if (line.startsWith('@@')) colorClass = 'text-accent-cyan';
-                  return (
-                    <div key={idx} className={colorClass}>
-                      {line}
-                    </div>
-                  );
-                })}
-              </pre>
             </div>
-
-            {/* Explicit Authorization Switch */}
-            <div className="p-3 rounded bg-canvas border border-canvas-border flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <ShieldCheck className="w-4 h-4 text-accent-amber" />
+          ) : baselineError ? (
+            <div className="p-4 rounded-xl bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-xs space-y-1">
+              <div className="font-bold">Baseline Execution Error:</div>
+              <div>{baselineError}</div>
+            </div>
+          ) : baselineResult ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#070A10] border border-canvas-border text-xs">
                 <div>
-                  <div className="font-bold text-text-primary">
-                    Authorize Patch Application in Disposable Sandbox
-                  </div>
-                  <div className="text-[10px] text-text-muted">
-                    No changes will touch your repository until independently verified and authorized.
-                  </div>
+                  <span className="text-text-muted">Baseline Verdict: </span>
+                  <span className="font-bold text-text-primary">{baselineResult.baseline_status}</span>
+                </div>
+                <div>
+                  <span className="text-text-muted">Exit Code: </span>
+                  <code className="text-text-primary font-bold">{baselineResult.exit_code}</code>
+                </div>
+                <div>
+                  <span className="text-text-muted">Duration: </span>
+                  <span className="text-text-primary font-bold">{baselineResult.duration_ms} ms</span>
+                </div>
+                <div>
+                  <span className="text-text-muted">Evidence Items: </span>
+                  <span className="text-accent-chaos font-bold">{baselineResult.evidence_count} captured</span>
                 </div>
               </div>
-              <input
-                type="checkbox"
-                checked={patchAuthorized}
-                onChange={(e) => setPatchAuthorized(e.target.checked)}
-                className="w-4 h-4 accent-accent-chaos rounded cursor-pointer"
+
+              {/* Terminal Panel with Actual Captured Stdout / Stderr */}
+              <TerminalPanel
+                title="Baseline Test Runner Output (Docker Sandbox)"
+                command={baselineResult.test_command}
+                output={baselineResult.output_excerpt}
+                exitCode={baselineResult.exit_code}
+                durationMs={baselineResult.duration_ms}
+                statusLabel={baselineResult.baseline_status}
               />
-            </div>
-          </div>
 
-          {/* Action to verify patch */}
-          <div className="flex justify-end pt-2">
-            <button
-              onClick={handleVerifyPatch}
-              disabled={isVerifying || !patchAuthorized}
-              className="px-4 py-2 bg-accent-amber hover:bg-accent-amber/90 disabled:opacity-50 text-canvas font-mono font-bold text-xs rounded transition flex items-center space-x-2"
-            >
-              {isVerifying ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Verifying in Docker Container...</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Run Independent Verification in Sandbox</span>
-                </>
+              {/* Failing Tests Pills */}
+              {baselineResult.failing_tests && baselineResult.failing_tests.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[10px] text-text-muted uppercase font-bold">
+                    Identified Failing Test Assertions:
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {baselineResult.failing_tests.map((test, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-[11px]"
+                      >
+                        {test}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
-            </button>
-          </div>
 
-          {verifyError && (
-            <div className="p-3 rounded bg-accent-crimson/10 border border-accent-crimson/30 text-accent-crimson text-xs font-mono flex items-center space-x-2">
-              <XCircle className="w-4 h-4 shrink-0" />
-              <span>{verifyError}</span>
+              {/* Proceed to AI Diagnosis action */}
+              {!diagnosisResult && (
+                <div className="pt-2 flex justify-end">
+                  <button
+                    onClick={handleDiagnoseAndPatch}
+                    disabled={isDiagnosing}
+                    className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-purple hover:bg-purple-600 text-white font-bold text-xs transition cursor-pointer shadow-lg shadow-purple-500/20"
+                  >
+                    {isDiagnosing ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Synthesizing AI Diagnosis & Patch...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Request AI Diagnosis & Patch</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          ) : null}
+        </section>
       )}
 
-      {/* Card 4: Independent Verification Outcome */}
-      {verifyResult && (
-        <div className="bg-canvas-subtle border border-canvas-border rounded-lg p-5 space-y-4">
+      {/* SECTION 4 — AI Diagnosis & Proposed Patch */}
+      {(diagnosisResult || isDiagnosing || diagnosisError) && (
+        <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-canvas-border pb-3">
-            <div className="flex items-center space-x-2.5">
-              <span className="w-6 h-6 rounded-full bg-accent-amber/15 text-accent-amber flex items-center justify-center text-xs font-mono font-bold">
+            <div className="flex items-center space-x-2">
+              <span className="w-6 h-6 rounded-full bg-accent-purple/20 border border-accent-purple/40 text-accent-purple text-xs font-bold flex items-center justify-center">
                 4
               </span>
-              <h2 className="text-sm font-bold font-mono text-text-primary">
-                INDEPENDENT VERIFICATION ENGINE VERDICT
+              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                AI Root-Cause Diagnosis & Proposed Unified Patch
               </h2>
             </div>
-            <div className="flex items-center space-x-2">
-              <span
-                className={`px-3 py-1 rounded text-xs font-mono font-bold flex items-center space-x-1.5 ${
-                  verifyResult.verification_status === 'VERIFIED'
-                    ? 'bg-accent-amber/20 text-accent-amber border border-accent-amber/40'
-                    : 'bg-accent-crimson/20 text-accent-crimson border border-accent-crimson/40'
-                }`}
-              >
-                {verifyResult.verification_status === 'VERIFIED' ? (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                ) : (
-                  <XCircle className="w-3.5 h-3.5" />
-                )}
-                <span>{verifyResult.verification_status}</span>
+
+            {diagnosisResult && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent-purple/15 text-accent-purple border border-accent-purple/30">
+                {diagnosisResult.is_ai_generated ? 'LIVE INFERENCE' : 'FALLBACK REFERENCE'}
               </span>
+            )}
+          </div>
+
+          {isDiagnosing ? (
+            <div className="p-8 rounded-xl bg-[#070A10] border border-canvas-border text-center space-y-3">
+              <Loader2 className="w-6 h-6 text-accent-purple animate-spin mx-auto" />
+              <div className="text-xs text-text-secondary">
+                Querying configured neural engine, analyzing captured stack traces, and formatting candidate unified diff...
+              </div>
+            </div>
+          ) : diagnosisError ? (
+            <div className="p-4 rounded-xl bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-xs">
+              <div className="font-bold">Inference Error:</div>
+              <div>{diagnosisError}</div>
+            </div>
+          ) : diagnosisResult ? (
+            <div className="space-y-4">
+              {/* Hypothesis & Confidence Banner */}
+              <div className="p-4 rounded-xl bg-[#070A10] border border-canvas-border space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-bold text-text-primary text-xs sm:text-sm">
+                    {diagnosisResult.title}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-text-muted text-[11px]">Confidence:</span>
+                    <span className="font-bold text-accent-chaos text-xs">
+                      {Math.round((diagnosisResult.confidence || 0) * 100)}%
+                    </span>
+                    <span className="text-text-muted text-[10px]">({diagnosisResult.provider})</span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-text-secondary leading-relaxed pt-1">
+                  <span className="text-text-muted font-bold mr-1">Root Cause Hypothesis:</span>
+                  {diagnosisResult.root_cause}
+                </div>
+
+                {diagnosisResult.risk_summary && (
+                  <div className="text-[11px] text-text-muted border-t border-canvas-border/40 pt-2 flex items-start space-x-1.5">
+                    <span className="text-text-secondary font-bold shrink-0">Risk Summary:</span>
+                    <span>{diagnosisResult.risk_summary}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Unified Diff Viewer */}
+              <DiffViewer
+                diff={diagnosisResult.proposed_patch_diff}
+                title="Proposed Candidate Patch (Unified Diff)"
+              />
+
+              {/* SECTION 5 — Patch Authorization */}
+              <div className="rounded-xl border border-accent-chaos/40 bg-accent-chaos/5 p-4 sm:p-5 space-y-3">
+                <div className="flex items-center space-x-2 text-xs font-bold text-accent-chaos uppercase tracking-wider">
+                  <Lock className="w-4 h-4" />
+                  <span>5. Operator Safety Authorization</span>
+                </div>
+
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  The synthesized patch will be applied strictly inside the disposable sandbox workspace (
+                  <code className="text-text-primary">workspaces/exp_{inspectionResult?.experiment_id}</code>).
+                  The original source repository remains completely untouched.
+                </p>
+
+                <div className="flex items-start space-x-3 pt-1">
+                  <input
+                    type="checkbox"
+                    id="authCheck"
+                    checked={patchAuthorized}
+                    onChange={(e) => setPatchAuthorized(e.target.checked)}
+                    className="mt-0.5 rounded border-canvas-border bg-[#070A10] text-accent-chaos focus:ring-0 cursor-pointer"
+                  />
+                  <label htmlFor="authCheck" className="text-xs text-text-primary select-none cursor-pointer">
+                    <span className="font-bold">Authorize Sandbox Patch Application & Verification</span>
+                    <span className="block text-[11px] text-text-muted mt-0.5">
+                      Grant permission to apply this diff to the isolated container and execute independent verification checks.
+                    </span>
+                  </label>
+                </div>
+
+                {/* Verification Trigger Button */}
+                {!verifyResult && (
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      onClick={handleVerifyPatch}
+                      disabled={!patchAuthorized || isVerifying}
+                      className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-success hover:bg-emerald-400 disabled:opacity-40 text-canvas font-bold text-xs transition cursor-pointer shadow-glow-emerald"
+                    >
+                      {isVerifying ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Executing Independent Sandbox Tests...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Apply Patch & Verify Recovery</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      )}
+
+      {/* SECTION 6 — Independent Verification Verdict */}
+      {(verifyResult || isVerifying || verifyError) && (
+        <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-canvas-border pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="w-6 h-6 rounded-full bg-accent-success/20 border border-accent-success/40 text-accent-success text-xs font-bold flex items-center justify-center">
+                6
+              </span>
+              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                Independent Verification Verdict
+              </h2>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono">
-            <div className="bg-canvas p-2.5 rounded border border-canvas-border">
-              <div className="text-text-muted text-[10px]">TARGET FAILURE RESOLVED</div>
-              <div className="font-bold text-text-primary mt-0.5">
-                {verifyResult.target_failure_resolved ? 'YES (Reproduction Passed)' : 'NO (Persisting)'}
+          {isVerifying ? (
+            <div className="p-8 rounded-xl bg-[#070A10] border border-canvas-border text-center space-y-3">
+              <Loader2 className="w-6 h-6 text-accent-success animate-spin mx-auto" />
+              <div className="text-xs text-text-secondary">
+                Applying patch in container, executing regression suite, and deriving independent verdict...
               </div>
             </div>
-            <div className="bg-canvas p-2.5 rounded border border-canvas-border">
-              <div className="text-text-muted text-[10px]">REGRESSIONS DETECTED</div>
-              <div className="font-bold text-text-primary mt-0.5">
-                {verifyResult.regressions_detected ? 'YES (Regression Found)' : 'NONE (Clean)'}
-              </div>
+          ) : verifyError ? (
+            <div className="p-4 rounded-xl bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-xs">
+              <div className="font-bold">Verification Harness Error:</div>
+              <div>{verifyError}</div>
             </div>
-            <div className="bg-canvas p-2.5 rounded border border-canvas-border">
-              <div className="text-text-muted text-[10px]">SANDBOX TEST TIME</div>
-              <div className="font-bold text-text-primary mt-0.5">{verifyResult.duration_ms}ms</div>
-            </div>
-          </div>
+          ) : verifyResult ? (
+            <div className="space-y-4">
+              {/* Verdict Card Component */}
+              <VerificationVerdict result={verifyResult} />
 
-          <div className="space-y-1">
-            <div className="text-xs font-mono text-text-muted">RE-TEST TERMINAL OUTPUT</div>
-            <pre className="p-3 rounded bg-canvas border border-canvas-border text-[11px] font-mono text-text-secondary overflow-x-auto max-h-40 whitespace-pre-wrap leading-relaxed">
-              {verifyResult.test_output_excerpt || 'All checks executed.'}
-            </pre>
-          </div>
+              {/* Terminal Panel for Post-Patch Test Run Output */}
+              {verifyResult.test_output_excerpt && (
+                <TerminalPanel
+                  title="Post-Patch Verification Test Output (Clean Sandbox Run)"
+                  output={verifyResult.test_output_excerpt}
+                  exitCode={verifyResult.exit_code}
+                  durationMs={verifyResult.duration_ms}
+                  statusLabel={verifyResult.verification_status}
+                />
+              )}
 
-          {/* Export & Publishing Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-canvas-border">
-            <a
-              href={api.getPatchExportUrl(verifyResult.experiment_id)}
-              download={`chaospatch-repair-${verifyResult.experiment_id}.patch`}
-              className="px-4 py-2 bg-canvas hover:bg-canvas-hover border border-canvas-border text-text-primary font-mono text-xs rounded transition flex items-center space-x-2"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Verified .patch</span>
-            </a>
+              {/* SECTION 7 — Export and Publish Actions */}
+              <div className="p-5 rounded-xl border border-canvas-border bg-[#070A10] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2 text-xs font-bold text-text-primary">
+                    <Download className="w-4 h-4 text-accent-chaos" />
+                    <span>7. Export Unified Diff & Guarded Branch Publishing</span>
+                  </div>
+                  <p className="text-[11px] text-text-muted">
+                    Download the validated <code className="text-accent-chaos">.patch</code> file or publish directly to a dedicated repair branch.
+                  </p>
+                </div>
 
-            <button
-              onClick={() => setShowPublishModal(true)}
-              className="px-4 py-2 bg-accent-amber hover:bg-accent-amber/90 text-canvas font-mono font-bold text-xs rounded transition flex items-center space-x-2"
-            >
-              <UploadCloud className="w-3.5 h-3.5" />
-              <span>Publish Dedicated Repair Branch</span>
-            </button>
-          </div>
-
-          {publishResult && (
-            <div className="p-3 rounded bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-xs font-mono space-y-1">
-              <div className="flex items-center space-x-2 font-bold">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Repair branch successfully published!</span>
-              </div>
-              <div className="text-text-secondary text-[11px]">
-                Branch: <span className="font-bold">{publishResult.published_branch}</span> (Commit: {publishResult.commit_sha?.slice(0, 8)})
-              </div>
-              {publishResult.remote_branch_url && (
-                <div>
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                   <a
-                    href={publishResult.remote_branch_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-accent-cyan hover:underline inline-flex items-center space-x-1"
+                    href={api.getPatchExportUrl(inspectionResult!.experiment_id)}
+                    download={`chaospatch-repair-${inspectionResult!.experiment_id}.patch`}
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-canvas-card border border-canvas-border hover:border-accent-chaos text-xs text-text-primary transition cursor-pointer"
                   >
-                    <span>View Branch on GitHub</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <Download className="w-3.5 h-3.5 text-accent-chaos" />
+                    <span>Export .patch</span>
                   </a>
+
+                  <button
+                    onClick={() => setShowPublishModal(true)}
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent-chaos hover:bg-amber-400 text-canvas font-bold text-xs transition cursor-pointer shadow-glow-amber"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Publish Dedicated Branch</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Publishing Status Callout if already published */}
+              {publishResult && (
+                <div
+                  className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                    publishResult.status === 'PUBLISHED'
+                      ? 'bg-accent-success/10 border-accent-success/30 text-accent-success'
+                      : 'bg-accent-failure/10 border-accent-failure/30 text-accent-failure'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <div className="font-bold flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Published to branch: {publishResult.published_branch}</span>
+                    </div>
+                    {publishResult.commit_sha && (
+                      <div className="text-[11px] text-text-secondary">
+                        Commit: <code className="text-text-primary">{publishResult.commit_sha}</code>
+                      </div>
+                    )}
+                  </div>
+
+                  {publishResult.remote_branch_url && (
+                    <a
+                      href={publishResult.remote_branch_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded bg-canvas-surface border border-canvas-border hover:border-accent-success text-text-primary text-[11px] flex items-center space-x-1"
+                    >
+                      <span>Open on GitHub</span>
+                      <ExternalLink className="w-3 h-3 text-accent-success" />
+                    </a>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
+          ) : null}
+        </section>
       )}
 
-      {/* Publish Modal with Strict Safety Policy */}
+      {/* Guarded Branch Publishing Modal */}
       {showPublishModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-canvas-subtle border border-canvas-border rounded-lg max-w-lg w-full p-6 space-y-4 font-mono">
-            <div className="flex items-center justify-between border-b border-canvas-border pb-3">
-              <div className="flex items-center space-x-2 text-accent-amber">
-                <Lock className="w-4 h-4" />
-                <h3 className="text-sm font-bold">AUTHORIZED REPAIR BRANCH PUBLISHING</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="rounded-2xl border border-canvas-border bg-[#0D1220] max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2.5 rounded-lg bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos">
+                  <UploadCloud className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-text-primary">
+                    Publish Guarded Repair Branch
+                  </h3>
+                  <p className="text-[11px] text-text-muted mt-0.5">
+                    Target: {inspectionResult?.owner}/{inspectionResult?.name}
+                  </p>
+                </div>
               </div>
+
               <button
                 onClick={() => setShowPublishModal(false)}
-                className="text-text-muted hover:text-text-primary text-xs"
+                className="text-text-muted hover:text-text-primary transition"
               >
                 ✕
               </button>
             </div>
 
-            <div className="text-xs text-text-secondary space-y-2">
-              <p>
-                Publish verified changes to an isolated branch on{' '}
-                <span className="text-text-primary font-bold">{inspectionResult?.owner}/{inspectionResult?.name}</span>.
-              </p>
-              <div className="p-2.5 rounded bg-canvas border border-canvas-border text-[11px] text-text-muted space-y-1">
-                <div className="text-accent-amber font-semibold">Strict Guardrails Enforced:</div>
-                <div>• Never pushes to default branch (<span className="text-accent-crimson">main/master prohibited</span>)</div>
-                <div>• Force-pushes (<span className="text-accent-crimson">--force</span>) are blocked</div>
-                <div>• Does not merge or open pull requests automatically</div>
-                <div>• Token is used in memory only and never stored in database or git remotes</div>
+            <div className="p-3.5 rounded-xl bg-[#070A10] border border-canvas-border text-[11px] space-y-1.5 text-text-secondary">
+              <div className="font-bold text-text-primary flex items-center space-x-1.5">
+                <Lock className="w-3.5 h-3.5 text-accent-chaos" />
+                <span>Protected Branch Safety Rule</span>
+              </div>
+              <div>
+                CHAOSPATCH never pushes to default branches (<code className="text-rose-400">main</code>, <code className="text-rose-400">master</code>).
+                All repairs are isolated into a dedicated <code className="text-accent-chaos">chaospatch/repair-...</code> branch.
               </div>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3.5">
               <div>
-                <label className="block text-text-muted text-[11px] mb-1">
-                  GITHUB PERSONAL ACCESS TOKEN (PAT with 'repo' scope)
+                <label className="block text-[11px] text-text-muted mb-1">
+                  GitHub Personal Access Token (PAT with repo push permissions)
                 </label>
                 <input
                   type="password"
                   value={githubToken}
                   onChange={(e) => setGithubToken(e.target.value)}
                   placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                  className="w-full bg-canvas border border-canvas-border rounded px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-amber"
+                  className="w-full bg-[#070A10] border border-canvas-border rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent-chaos font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-text-muted text-[11px] mb-1">
-                  DEDICATED REPAIR BRANCH NAME
+                <label className="block text-[11px] text-text-muted mb-1">
+                  Dedicated Repair Branch Name
                 </label>
                 <input
                   type="text"
                   value={customBranch}
                   onChange={(e) => setCustomBranch(e.target.value)}
-                  className="w-full bg-canvas border border-canvas-border rounded px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-amber"
+                  className="w-full bg-[#070A10] border border-canvas-border rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent-chaos font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-text-muted text-[11px] mb-1">
-                  COMMIT MESSAGE
+                <label className="block text-[11px] text-text-muted mb-1">
+                  Commit Message
                 </label>
                 <input
                   type="text"
                   value={commitMessage}
                   onChange={(e) => setCommitMessage(e.target.value)}
-                  placeholder="fix(repair): verified patch applied by CHAOSPATCH"
-                  className="w-full bg-canvas border border-canvas-border rounded px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-amber"
+                  className="w-full bg-[#070A10] border border-canvas-border rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent-chaos font-mono"
                 />
               </div>
             </div>
 
             {publishError && (
-              <div className="p-2.5 rounded bg-accent-crimson/10 border border-accent-crimson/30 text-accent-crimson text-xs">
+              <div className="p-3 rounded-lg bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-[11px]">
                 {publishError}
               </div>
             )}
 
-            <div className="flex justify-end space-x-2 pt-2 border-t border-canvas-border">
+            <div className="flex items-center justify-end space-x-3 pt-2">
               <button
-                type="button"
                 onClick={() => setShowPublishModal(false)}
-                className="px-3 py-1.5 rounded bg-canvas border border-canvas-border text-text-secondary hover:text-text-primary text-xs"
+                className="px-4 py-2 rounded-lg text-text-muted hover:text-text-primary transition"
+                disabled={isPublishing}
               >
                 Cancel
               </button>
               <button
-                type="button"
                 onClick={handlePublishBranch}
                 disabled={isPublishing || !githubToken.trim()}
-                className="px-4 py-1.5 rounded bg-accent-amber hover:bg-accent-amber/90 disabled:opacity-50 text-canvas font-bold text-xs flex items-center space-x-1.5"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-accent-chaos hover:bg-amber-400 disabled:opacity-40 text-canvas font-bold transition shadow-glow-amber cursor-pointer"
               >
                 {isPublishing ? (
                   <>
@@ -758,7 +874,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
                 ) : (
                   <>
                     <UploadCloud className="w-3.5 h-3.5" />
-                    <span>Confirm & Publish</span>
+                    <span>Authorize & Push Branch</span>
                   </>
                 )}
               </button>

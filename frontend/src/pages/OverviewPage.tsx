@@ -2,23 +2,32 @@ import React, { useEffect, useState } from 'react';
 import {
   Activity,
   CheckCircle2,
-  XCircle,
   Clock,
   PlayCircle,
-  AlertTriangle,
   ArrowUpRight,
   TrendingUp,
-  Cpu,
+  Shield,
+  Layers,
+  Sparkles,
+  GitBranch,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { DashboardSummary, Experiment } from '../types';
+import { KineticGrid } from '../components/ui/KineticGrid';
+import { MetricCard } from '../components/ui/MetricCard';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { BentoCardSkeleton } from '../components/ui/LoadingSkeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 
 interface OverviewPageProps {
   onNavigateLauncher: () => void;
   onSelectExperiment: (id: number) => void;
 }
 
-export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateLauncher, onSelectExperiment }) => {
+export const OverviewPage: React.FC<OverviewPageProps> = ({
+  onNavigateLauncher,
+  onSelectExperiment,
+}) => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,172 +44,239 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateLauncher, 
 
   useEffect(() => {
     fetchSummary();
-    const interval = setInterval(fetchSummary, 10000);
+    const interval = setInterval(fetchSummary, 12000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / Hero */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-xl border border-canvas-border bg-gradient-to-r from-canvas-card via-canvas-card to-canvas-surface">
-        <div>
-          <div className="flex items-center space-x-2 text-accent-chaos text-xs font-mono font-bold uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-accent-chaos animate-ping" />
-            <span>Autonomous AI Reliability Engineering</span>
-          </div>
-          <h1 className="text-xl md:text-2xl font-mono font-bold text-text-primary mt-1">
-            Controlled Chaos Injection & Verification
-          </h1>
-          <p className="text-xs text-text-muted mt-1 max-w-xl">
-            Simulate real-world production outages in isolated sandboxes. Qwen AI identifies root causes and proposes
-            minimal patches; independent verifiers decide if recovery succeeded.
-          </p>
-        </div>
-
-        <button
-          onClick={onNavigateLauncher}
-          className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-chaos hover:bg-amber-400 text-canvas font-mono text-xs font-bold transition shadow-lg shadow-amber-500/10 shrink-0"
-        >
-          <PlayCircle className="w-4 h-4" />
-          <span>RUN NEW EXPERIMENT</span>
-        </button>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Experiments */}
-        <div className="p-4 rounded-lg border border-canvas-border bg-canvas-card">
-          <div className="flex items-center justify-between text-text-muted text-xs font-mono">
-            <span>Total Experiments</span>
-            <Activity className="w-4 h-4 text-accent-info" />
-          </div>
-          <div className="text-2xl font-mono font-bold text-text-primary mt-2">
-            {summary?.total_experiments ?? 0}
-          </div>
-          <div className="text-[11px] font-mono text-text-muted mt-1">Sandbox test runs</div>
-        </div>
-
-        {/* Verified Recoveries */}
-        <div className="p-4 rounded-lg border border-canvas-border bg-canvas-card">
-          <div className="flex items-center justify-between text-text-muted text-xs font-mono">
-            <span>Verified Recoveries</span>
-            <CheckCircle2 className="w-4 h-4 text-accent-success" />
-          </div>
-          <div className="text-2xl font-mono font-bold text-accent-success mt-2">
-            {summary?.successful_recoveries ?? 0}
-          </div>
-          <div className="text-[11px] font-mono text-text-muted mt-1">Independent tests passed</div>
-        </div>
-
-        {/* Verification Success Rate */}
-        <div className="p-4 rounded-lg border border-canvas-border bg-canvas-card">
-          <div className="flex items-center justify-between text-text-muted text-xs font-mono">
-            <span>Verification Rate</span>
-            <TrendingUp className="w-4 h-4 text-accent-purple" />
-          </div>
-          <div className="text-2xl font-mono font-bold text-text-primary mt-2">
-            {summary?.verification_rate !== null && summary?.verification_rate !== undefined
-              ? `${summary.verification_rate}%`
-              : 'N/A'}
-          </div>
-          <div className="text-[11px] font-mono text-text-muted mt-1">Pass rate on first verify</div>
-        </div>
-
-        {/* MTTR / Avg Recovery Time */}
-        <div className="p-4 rounded-lg border border-canvas-border bg-canvas-card">
-          <div className="flex items-center justify-between text-text-muted text-xs font-mono">
-            <span>Avg Recovery Time</span>
-            <Clock className="w-4 h-4 text-accent-chaos" />
-          </div>
-          <div className="text-2xl font-mono font-bold text-text-primary mt-2">
-            {summary?.avg_recovery_time_ms ? `${summary.avg_recovery_time_ms} ms` : 'N/A'}
-          </div>
-          <div className="text-[11px] font-mono text-text-muted mt-1">Diagnosis + patch apply + test</div>
-        </div>
-      </div>
-
-      {/* Two Column Layout: Recent Experiments & Scenario Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Experiments Table */}
-        <div className="lg:col-span-2 rounded-lg border border-canvas-border bg-canvas-card overflow-hidden">
-          <div className="px-4 py-3 bg-canvas-surface border-b border-canvas-border flex items-center justify-between">
-            <span className="text-xs font-mono font-bold text-text-primary">Recent Chaos Experiments</span>
-            <span className="text-[11px] font-mono text-text-muted">Live DB persistence</span>
-          </div>
-
-          <div className="divide-y divide-canvas-border">
-            {!summary?.recent_experiments || summary.recent_experiments.length === 0 ? (
-              <div className="p-8 text-center text-xs font-mono text-text-muted">
-                No experiments conducted yet. Click <span className="text-accent-chaos font-bold">RUN NEW EXPERIMENT</span> to begin.
+      {/* Hero Command Center Section with Subtle Kinetic Grid Background */}
+      <div className="relative rounded-2xl border border-canvas-border overflow-hidden bg-[#080B12] shadow-glow-card">
+        <KineticGrid intensity="subtle" className="min-h-[200px] sm:min-h-[220px]">
+          <div className="p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="max-w-2xl space-y-2">
+              <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-md bg-accent-chaos/10 border border-accent-chaos/30 text-accent-chaos text-xs font-mono font-bold tracking-wider uppercase">
+                <span className="w-2 h-2 rounded-full bg-accent-chaos animate-ping" />
+                <span>AI SOFTWARE RELIABILITY ENGINEERING</span>
               </div>
-            ) : (
-              summary.recent_experiments.map((exp: Experiment) => {
-                const isSuccess = exp.final_verified === true;
-                return (
-                  <div
-                    key={exp.id}
-                    onClick={() => onSelectExperiment(exp.id)}
-                    className="p-3.5 flex items-center justify-between hover:bg-canvas-hover/30 transition cursor-pointer text-xs font-mono"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <span className="font-bold text-accent-chaos">#EXP-{exp.id}</span>
-                      <span className="text-text-primary">{exp.scenario_type}</span>
-                    </div>
 
-                    <div className="flex items-center space-x-4">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          exp.status === 'COMPLETED'
-                            ? 'bg-accent-success/20 text-accent-success'
-                            : exp.status === 'FAILED' || exp.status === 'VERIFICATION_FAILED'
-                            ? 'bg-accent-failure/20 text-accent-failure'
-                            : 'bg-canvas-surface text-text-muted'
-                        }`}
-                      >
-                        {exp.status}
-                      </span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-text-muted" />
-                    </div>
-                  </div>
-                );
-              })
-            )}
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-mono font-extrabold text-text-primary tracking-tight">
+                Controlled Chaos. <span className="text-accent-chaos">Verified Recovery.</span>
+              </h1>
+
+              <p className="text-xs sm:text-sm text-text-secondary font-mono leading-relaxed max-w-xl">
+                CHAOSPATCH reproduces failures, gathers sanitized evidence, synthesizes minimal AI patches,
+                and independently tests whether recovery succeeded inside isolated Docker sandboxes.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+              <button
+                onClick={onNavigateLauncher}
+                className="flex items-center justify-center space-x-2 px-5 py-3 rounded-xl bg-accent-chaos hover:bg-amber-400 text-canvas font-mono text-xs font-bold transition-all shadow-glow-amber cursor-pointer group"
+              >
+                <PlayCircle className="w-4 h-4 transition-transform group-hover:scale-110" />
+                <span>RUN NEW EXPERIMENT</span>
+              </button>
+            </div>
           </div>
+        </KineticGrid>
+      </div>
+
+      {/* Bento KPI Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading && !summary ? (
+          <>
+            <BentoCardSkeleton />
+            <BentoCardSkeleton />
+            <BentoCardSkeleton />
+            <BentoCardSkeleton />
+          </>
+        ) : (
+          <>
+            <MetricCard
+              label="Total Experiments"
+              value={summary?.total_experiments ?? 0}
+              caption="Sandbox test runs"
+              icon={Activity}
+              variant="cyan"
+              trend={{ text: 'Live Persistence', positive: true }}
+            />
+
+            <MetricCard
+              label="Verified Recoveries"
+              value={summary?.successful_recoveries ?? 0}
+              caption="Independent verification passed"
+              icon={CheckCircle2}
+              variant="emerald"
+              trend={{ text: 'Verified', positive: true }}
+            />
+
+            <MetricCard
+              label="Verification Rate"
+              value={
+                summary?.verification_rate !== null && summary?.verification_rate !== undefined
+                  ? `${summary.verification_rate}%`
+                  : 'N/A'
+              }
+              caption="Pass rate on post-patch check"
+              icon={TrendingUp}
+              variant="purple"
+            />
+
+            <MetricCard
+              label="Avg Recovery Time"
+              value={
+                summary?.avg_recovery_time_ms
+                  ? `${summary.avg_recovery_time_ms} ms`
+                  : 'N/A'
+              }
+              caption="Diagnosis + apply + verify"
+              icon={Clock}
+              variant="amber"
+            />
+          </>
+        )}
+      </div>
+
+      {/* Bento Middle Split: Recent Experiments & Scenario Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Experiments Table Panel (2 columns wide) */}
+        <div className="lg:col-span-2 rounded-xl border border-canvas-border bg-canvas-card overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="px-5 py-3.5 bg-canvas-surface/80 border-b border-canvas-border flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Layers className="w-4 h-4 text-accent-chaos" />
+                <span className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider">
+                  Recent Chaos Experiments
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-text-muted">
+                {summary?.recent_experiments?.length || 0} recorded runs
+              </span>
+            </div>
+
+            <div className="divide-y divide-canvas-border/70 font-mono text-xs">
+              {!summary?.recent_experiments || summary.recent_experiments.length === 0 ? (
+                <EmptyState
+                  title="No Experiments Recorded"
+                  description="Run a demo fault injection or inspect a public GitHub repository to observe autonomous recovery."
+                  action={
+                    <button
+                      onClick={onNavigateLauncher}
+                      className="px-3.5 py-1.5 rounded-lg bg-canvas-surface border border-canvas-border hover:border-accent-chaos text-xs font-mono text-accent-chaos transition"
+                    >
+                      Launch First Experiment
+                    </button>
+                  }
+                />
+              ) : (
+                summary.recent_experiments.slice(0, 7).map((exp: Experiment) => {
+                  return (
+                    <div
+                      key={exp.id}
+                      onClick={() => onSelectExperiment(exp.id)}
+                      className="p-3.5 sm:px-5 flex items-center justify-between hover:bg-canvas-hover/40 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center space-x-3 min-w-0">
+                        <span className="font-bold text-accent-chaos shrink-0">
+                          #EXP-{exp.id}
+                        </span>
+                        <div className="truncate">
+                          <span className="font-semibold text-text-primary block truncate">
+                            {exp.repo_url ? (
+                              <span className="flex items-center space-x-1.5">
+                                <GitBranch className="w-3.5 h-3.5 text-accent-cyan shrink-0" />
+                                <span className="truncate">{exp.repo_owner}/{exp.repo_name}</span>
+                              </span>
+                            ) : (
+                              exp.scenario_type
+                            )}
+                          </span>
+                          <span className="text-[10px] text-text-muted">
+                            {new Date(exp.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3 shrink-0">
+                        <StatusIndicator status={exp.status} size="sm" />
+                        <ArrowUpRight className="w-4 h-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {summary?.recent_experiments && summary.recent_experiments.length > 0 && (
+            <div className="px-5 py-2.5 bg-canvas-surface/40 border-t border-canvas-border/50 text-[11px] font-mono text-text-muted flex justify-between items-center">
+              <span>Click any experiment to open live workspace</span>
+              <span className="text-accent-chaos font-semibold">Live Sandbox Harness</span>
+            </div>
+          )}
         </div>
 
-        {/* Scenario Distribution */}
-        <div className="rounded-lg border border-canvas-border bg-canvas-card p-4 space-y-4">
-          <div className="text-xs font-mono font-bold text-text-primary border-b border-canvas-border pb-2">
-            Scenario Distribution
-          </div>
+        {/* Right Column: Scenario Distribution & Principle Panel */}
+        <div className="space-y-6">
+          {/* Scenario Distribution Bento Card */}
+          <div className="rounded-xl border border-canvas-border bg-canvas-card p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-canvas-border pb-3">
+              <span className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider">
+                Scenario Distribution
+              </span>
+              <span className="text-[10px] font-mono text-text-muted">Telemetry</span>
+            </div>
 
-          <div className="space-y-3 font-mono text-xs">
-            {Object.entries(summary?.scenario_distribution || {}).length === 0 ? (
-              <div className="text-text-muted text-[11px] py-4 text-center">No scenario metrics yet.</div>
-            ) : (
-              Object.entries(summary?.scenario_distribution || {}).map(([scen, count]) => (
-                <div key={scen} className="space-y-1">
-                  <div className="flex justify-between text-text-secondary">
-                    <span className="truncate">{scen}</span>
-                    <span className="text-accent-chaos font-bold">{count}</span>
-                  </div>
-                  <div className="w-full bg-canvas-surface h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-accent-chaos h-full rounded-full"
-                      style={{
-                        width: `${Math.min(100, (count / (summary?.total_experiments || 1)) * 100)}%`,
-                      }}
-                    />
-                  </div>
+            <div className="space-y-3 font-mono text-xs">
+              {!summary?.scenario_distribution ||
+              Object.entries(summary.scenario_distribution).length === 0 ? (
+                <div className="text-text-muted text-[11px] py-6 text-center">
+                  No scenario telemetry recorded yet.
                 </div>
-              ))
-            )}
+              ) : (
+                Object.entries(summary.scenario_distribution).map(([scen, count]) => {
+                  const total = summary.total_experiments || 1;
+                  const pct = Math.round((count / total) * 100);
+
+                  return (
+                    <div key={scen} className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-text-secondary truncate pr-2">{scen}</span>
+                        <div className="flex items-center space-x-1.5 shrink-0">
+                          <span className="text-text-muted">{pct}%</span>
+                          <span className="text-accent-chaos font-bold">({count})</span>
+                        </div>
+                      </div>
+                      <div className="w-full bg-canvas-surface h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-accent-chaos h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, pct)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
-          {/* Principle Reminder Card */}
-          <div className="p-3 rounded bg-canvas-surface border border-canvas-border text-[11px] font-mono space-y-1 text-text-muted">
-            <div className="font-bold text-text-secondary">Core Guarantee:</div>
-            <div>The AI proposes the repair. The verification engine independently tests and validates it.</div>
+          {/* Trust Statement Card */}
+          <div className="rounded-xl border border-canvas-border/80 bg-gradient-to-br from-canvas-card via-[#121929] to-[#0E1524] p-5 space-y-3 shadow-lg">
+            <div className="flex items-center space-x-2 text-accent-chaos text-xs font-mono font-bold uppercase tracking-wider">
+              <Shield className="w-4 h-4 text-accent-chaos" />
+              <span>Core Reliability Guarantee</span>
+            </div>
+
+            <blockquote className="text-xs font-mono text-text-primary font-medium leading-relaxed border-l-2 border-accent-chaos pl-3 py-0.5">
+              "The AI proposes the repair. The verification engine decides whether it worked."
+            </blockquote>
+
+            <p className="text-[11px] font-mono text-text-muted leading-normal">
+              No patch is declared recovered without independent deterministic checks executed in an isolated,
+              air-gapped Docker container.
+            </p>
           </div>
         </div>
       </div>

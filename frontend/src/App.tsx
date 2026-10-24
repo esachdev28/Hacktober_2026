@@ -12,6 +12,7 @@ import { SettingsPage } from './pages/SettingsPage';
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
   const [activeExperimentId, setActiveExperimentId] = useState<number | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleExperimentLaunched = (id: number) => {
     setActiveExperimentId(id);
@@ -24,22 +25,27 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-text-primary flex flex-col font-sans">
-      {/* Top Header */}
-      <Header />
+    <div className="min-h-screen bg-canvas text-text-primary flex flex-col font-sans selection:bg-accent-chaos/30 selection:text-white">
+      {/* Top Bar with real runtime status */}
+      <Header
+        onToggleMobileNav={() => setMobileNavOpen(!mobileNavOpen)}
+        mobileNavOpen={mobileNavOpen}
+      />
 
-      {/* Main Container */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Container Layout */}
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Sidebar */}
         <Sidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
           activeExperimentId={activeExperimentId}
+          isOpenMobile={mobileNavOpen}
+          onCloseMobile={() => setMobileNavOpen(false)}
         />
 
-        {/* Dynamic Main Workspace */}
-        <main className="flex-1 overflow-y-auto p-6 bg-grid-pattern">
-          <div className="max-w-7xl mx-auto">
+        {/* Dynamic Main Workspace with Responsive Padding */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-grid-pattern">
+          <div className="max-w-7xl mx-auto w-full">
             {activeTab === 'overview' && (
               <OverviewPage
                 onNavigateLauncher={() => setActiveTab('repo_mode')}
@@ -71,7 +77,7 @@ export const App: React.FC = () => {
             )}
 
             {activeTab === 'repairs' && (
-              <IncidentsPage onSelectExperiment={handleSelectExperiment} />
+              <IncidentsPage onSelectExperiment={handleSelectExperiment} mode="repairs" />
             )}
 
             {activeTab === 'settings' && <SettingsPage />}

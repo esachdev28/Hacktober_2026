@@ -9,12 +9,12 @@ export default {
     extend: {
       colors: {
         canvas: {
-          DEFAULT: '#090D16',
-          subtle: '#0E1422',
-          surface: '#141C2E',
-          card: '#1A2338',
-          border: '#23304B',
-          hover: '#293856',
+          DEFAULT: '#080B12',
+          subtle: '#0D1220',
+          surface: '#111827',
+          card: '#172033',
+          border: '#253148',
+          hover: '#1E293B',
         },
         text: {
           primary: '#F8FAFC',
@@ -22,16 +22,22 @@ export default {
           muted: '#64748B',
         },
         accent: {
-          chaos: '#F59E0B',      // Injected fault / warning amber
-          success: '#10B981',    // Verified recovery green
-          failure: '#EF4444',    // Actual failure red
-          info: '#3B82F6',       // Blue for informational events
-          purple: '#8B5CF6',     // AI analysis / diagnostic purple
+          chaos: '#FF9F0A',      // Electric amber/orange
+          success: '#10B981',    // Restrained emerald green
+          failure: '#EF4444',    // Clear red
+          info: '#38BDF8',       // Blue-cyan for informational events
+          purple: '#A855F7',     // AI analysis / diagnostic purple
+          cyan: '#06B6D4',
         }
       },
       fontFamily: {
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+      },
+      boxShadow: {
+        'glow-amber': '0 0 25px -5px rgba(255, 159, 10, 0.15)',
+        'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.15)',
+        'glow-card': '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
       }
     },
   },
