@@ -239,3 +239,47 @@ export interface RepoPublishResponse {
   message?: string;
 }
 
+export interface MonkeyVectorInfo {
+  id: string;
+  name: string;
+  target_layer: string;
+  failure_mechanism: string;
+  risk_level: string;
+  default_weight: number;
+}
+
+export type MonkeyIntensity = 'LOW' | 'MODERATE' | 'AGGRESSIVE' | 'CHAOS_BARRAGE';
+
+export interface MonkeyConfig {
+  target_environment?: 'DOCKER_SANDBOX' | 'LOCAL_PROCESS';
+  target_path?: string;
+  attack_vectors: string[];
+  intensity: MonkeyIntensity;
+  auto_repair: boolean;
+  jitter_ms: number;
+  max_duration_seconds?: number;
+}
+
+export interface MonkeyLaunchResponse {
+  experiment_id: number;
+  status: string;
+  planned_vectors: string[];
+  intensity: string;
+  timestamp: string;
+  message: string;
+}
+
+export interface MonkeyStatusResponse {
+  experiment_id: number;
+  state: string;
+  active_vector?: string | null;
+  logs: string[];
+  evidence_ids: string[];
+}
+
+export interface MonkeyCatalogResponse {
+  vectors: MonkeyVectorInfo[];
+  intensities: MonkeyIntensity[];
+}
+
+

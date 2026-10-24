@@ -104,7 +104,7 @@ class Experiment(Base):
     __tablename__ = "experiments"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    scenario_type = Column(String(50), nullable=False)
+    scenario_type = Column(String(150), nullable=False)
     status = Column(String(30), default=ExperimentStatus.CREATED.value, nullable=False)
     target_environment = Column(String(20), default="SANDBOX", nullable=False)
     

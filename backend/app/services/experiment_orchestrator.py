@@ -23,6 +23,7 @@ from app.services.fault_injector import get_fault_plugin
 from app.services.evidence_collector import EvidencePackage
 from app.services.patch_validator import PatchValidator
 from app.services.verification_engine import VerificationEngine
+from app.services.monkey_engine import MonkeyChaosEngine
 from app.providers import get_inference_provider
 from app.providers.base import ModelDiagnosisResult
 
@@ -98,9 +99,18 @@ class ExperimentOrchestrator:
     @classmethod
     def start_experiment(cls, experiment_id: int, auto_approve_patch: bool = False):
         """Spawn background async task to run experiment."""
-        task = asyncio.create_task(cls._run_lifecycle(experiment_id, auto_approve_patch))
-        cls._active_tasks[experiment_id] = task
-        return task
+        try:
+            loop = asyncio.get_running_loop()
+            task = loop.create_task(cls._run_lifecycle(experiment_id, auto_approve_patch))
+            cls._active_tasks[experiment_id] = task
+            return task
+        except RuntimeError:
+            import threading
+            def _runner():
+                asyncio.run(cls._run_lifecycle(experiment_id, auto_approve_patch))
+            t = threading.Thread(target=_runner, daemon=True)
+            t.start()
+            return None
 
     @classmethod
     async def cancel_experiment(cls, experiment_id: int):
@@ -159,12 +169,26 @@ class ExperimentOrchestrator:
             exp.started_at = datetime.utcnow()
             db.commit()
 
-            plugin = get_fault_plugin(exp.scenario_type)
-            if not plugin:
-                exp.status = ExperimentStatus.FAILED.value
-                exp.failure_reason = f"Unknown scenario: {exp.scenario_type}"
-                db.commit()
-                return
+            is_monkey = exp.scenario_type.startswith("monkey:")
+            plugin = None
+            monkey_vectors: List[str] = []
+            monkey_intensity = "MODERATE"
+
+            if is_monkey:
+                parts = exp.scenario_type.split(":")
+                if len(parts) > 1 and parts[1]:
+                    monkey_intensity = parts[1]
+                if len(parts) > 2 and parts[2]:
+                    monkey_vectors = [v for v in parts[2].split("+") if v]
+                if not monkey_vectors:
+                    monkey_vectors = MonkeyChaosEngine.select_attack_plan(monkey_intensity)
+            else:
+                plugin = get_fault_plugin(exp.scenario_type)
+                if not plugin:
+                    exp.status = ExperimentStatus.FAILED.value
+                    exp.failure_reason = f"Unknown scenario: {exp.scenario_type}"
+                    db.commit()
+                    return
 
             # STAGE 1: BASELINING
             await cls._transition_status(db, exp, ExperimentStatus.BASELINING, "Cloning demo application into isolated disposable sandbox...")
@@ -190,19 +214,49 @@ class ExperimentOrchestrator:
             await cls.broadcast_event(exp.id, "LOG", "✅ Baseline tests passed. System is verified healthy.", db=db)
 
             # STAGE 2: INJECTING
-            await cls._transition_status(db, exp, ExperimentStatus.INJECTING, f"Injecting controlled chaos fault: {plugin.name}...")
-            inject_data = plugin.inject(workspace)
-            evidence_pkg.add_item(
-                EvidenceType.FAULT_INJECTION,
-                "fault_injector",
-                json.dumps(inject_data, indent=2),
-                Severity.WARNING,
-            )
-            await cls.broadcast_event(exp.id, "FAULT_INJECTED", f"Injected fault: {inject_data.get('injected_vulnerability')}", metadata=inject_data, db=db)
+            if is_monkey:
+                await cls._transition_status(
+                    db, exp, ExperimentStatus.INJECTING,
+                    f"Unleashing autonomous Monkey Chaos strike ({monkey_intensity}: {', '.join(monkey_vectors)})..."
+                )
+                strike_data = MonkeyChaosEngine.execute_monkey_strike(workspace, monkey_vectors, jitter_ms=0)
+                evidence_pkg.add_item(
+                    EvidenceType.FAULT_INJECTION,
+                    "monkey_chaos_engine",
+                    f"EVID-MONKEY-{strike_data['strike_id']}\n" + json.dumps(strike_data, indent=2),
+                    Severity.WARNING,
+                )
+                await cls.broadcast_event(
+                    exp.id,
+                    "MONKEY_STRIKE_APPLIED",
+                    f"Monkey strike {strike_data['strike_id']} applied. Vectors: {', '.join(strike_data['applied_vectors'])}; Files: {', '.join(strike_data['affected_files'])}",
+                    metadata=strike_data,
+                    db=db,
+                )
+                reproduction_filter = strike_data["reproduction_filter"]
+                incident_title = f"Incident: Monkey Chaos ({monkey_intensity}) in {exp.target_environment}"
+                incident_desc = f"Autonomous strike triggered vectors: {', '.join(strike_data['applied_vectors'])}"
+                incident_root = f"Injected faults across: {', '.join(strike_data['affected_files'])}"
+                candidate_fallback = strike_data["candidate_repair"]
+            else:
+                await cls._transition_status(db, exp, ExperimentStatus.INJECTING, f"Injecting controlled chaos fault: {plugin.name}...")
+                inject_data = plugin.inject(workspace)
+                evidence_pkg.add_item(
+                    EvidenceType.FAULT_INJECTION,
+                    "fault_injector",
+                    json.dumps(inject_data, indent=2),
+                    Severity.WARNING,
+                )
+                await cls.broadcast_event(exp.id, "FAULT_INJECTED", f"Injected fault: {inject_data.get('injected_vulnerability')}", metadata=inject_data, db=db)
+                reproduction_filter = plugin.get_verification_test_filter()
+                incident_title = f"Incident: {plugin.name} in {exp.target_environment}"
+                incident_desc = plugin.description
+                incident_root = plugin.failure_mechanism
+                candidate_fallback = plugin.get_candidate_repair()
 
             # STAGE 3: OBSERVING
             await cls._transition_status(db, exp, ExperimentStatus.OBSERVING, "Observing symptoms, capturing logs, and collecting failure evidence...")
-            repro_result = VerificationEngine.verify_fault_reproduction(workspace, plugin.get_verification_test_filter())
+            repro_result = VerificationEngine.verify_fault_reproduction(workspace, reproduction_filter)
             
             evidence_pkg.add_item(
                 EvidenceType.TEST_RESULT,
@@ -227,10 +281,10 @@ class ExperimentOrchestrator:
             # Record Incident
             incident = Incident(
                 experiment_id=exp.id,
-                title=f"Incident: {plugin.name} in {exp.target_environment}",
-                description=plugin.description,
+                title=incident_title,
+                description=incident_desc,
                 severity=Severity.ERROR.value,
-                root_cause=plugin.failure_mechanism,
+                root_cause=incident_root,
                 confidence=0.90,
             )
             db.add(incident)
@@ -240,8 +294,13 @@ class ExperimentOrchestrator:
             await cls._transition_status(db, exp, ExperimentStatus.DIAGNOSING, "AI model analyzing evidence package and synthesizing minimal patch...")
             
             # Read relevant source snippet
-            target_source_path = "demo_app/config.py" if exp.scenario_type == "missing_env_config" else "demo_app/client.py"
-            source_content = workspace.read_file(target_source_path) or ""
+            if is_monkey:
+                config_src = workspace.read_file("demo_app/config.py") or ""
+                client_src = workspace.read_file("demo_app/client.py") or ""
+                source_content = f"# demo_app/config.py\n{config_src}\n\n# demo_app/client.py\n{client_src}"
+            else:
+                target_source_path = "demo_app/config.py" if exp.scenario_type == "missing_env_config" else "demo_app/client.py"
+                source_content = workspace.read_file(target_source_path) or ""
 
             # Attempt AI inference via configured provider (NVIDIA NIM or HF)
             provider = get_inference_provider()
@@ -262,15 +321,15 @@ class ExperimentOrchestrator:
                 await cls.broadcast_event(exp.id, "AI_UNAVAILABLE", f"Inference note: {ai_error}. Utilizing verified baseline candidate repair.", db=db)
                 
                 # Deterministic reference fallback (clearly labeled as non-AI)
-                candidate = plugin.get_candidate_repair()
+                candidate = candidate_fallback
                 diagnosis_res = ModelDiagnosisResult(
-                    title=f"Diagnosis: {plugin.name}",
-                    root_cause=plugin.failure_mechanism,
+                    title=f"Diagnosis: {incident_title}",
+                    root_cause=incident_root,
                     confidence=0.95,
                     cited_evidence_ids=["EVID-001-002"],
-                    proposed_patch_diff=candidate["diff"],
-                    explanation=candidate["explanation"],
-                    risk_summary=candidate["risk_summary"],
+                    proposed_patch_diff=candidate.get("diff", ""),
+                    explanation=candidate.get("explanation", "Autonomous reference repair applied."),
+                    risk_summary=candidate.get("risk_summary", "Autonomous repair evaluated for stability."),
                     is_ai_generated=False,
                     provider="deterministic-reference-plugin",
                 )
@@ -353,9 +412,24 @@ class ExperimentOrchestrator:
             if not exp or not repair:
                 return
 
-            plugin = get_fault_plugin(exp.scenario_type)
-            if not plugin:
-                return
+            is_monkey = exp.scenario_type.startswith("monkey:")
+            verification_filter = None
+            if is_monkey:
+                parts = exp.scenario_type.split(":")
+                vectors = parts[2].split("+") if len(parts) > 2 else []
+                filters = []
+                for vid in vectors:
+                    plug = MonkeyChaosEngine.get_plugin_instance(vid)
+                    if plug:
+                        f = plug.get_verification_test_filter()
+                        if f:
+                            filters.append(f)
+                verification_filter = " or ".join(filters) if filters else None
+            else:
+                plugin = get_fault_plugin(exp.scenario_type)
+                if not plugin:
+                    return
+                verification_filter = plugin.get_verification_test_filter()
 
             # STAGE 6: APPLYING
             await cls._transition_status(db, exp, ExperimentStatus.APPLYING, "Applying approved patch to isolated workspace...")
@@ -378,7 +452,7 @@ class ExperimentOrchestrator:
             
             verification_suite = VerificationEngine.run_post_repair_verification(
                 workspace,
-                plugin.get_verification_test_filter()
+                verification_filter
             )
 
             # Record verification runs in database

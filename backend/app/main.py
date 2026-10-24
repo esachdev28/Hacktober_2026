@@ -15,6 +15,7 @@ from app.api.routes import (
     incidents_router,
     settings_router,
     repository_router,
+    monkey_router,
 )
 
 
@@ -53,6 +54,7 @@ app.include_router(experiments_router, prefix="/api")
 app.include_router(incidents_router, prefix="/api")
 app.include_router(settings_router, prefix="/api")
 app.include_router(repository_router, prefix="/api")
+app.include_router(monkey_router, prefix="/api")
 
 
 @app.get("/")

@@ -75,6 +75,11 @@ class FilesystemSecurityPolicy:
 
         return True, None
 
+    def is_path_allowed(self, relative_path: str) -> bool:
+        """Convenience method returning True if relative_path is permitted and safe."""
+        safe, _ = self.is_safe_relative_path(relative_path)
+        return safe
+
     def validate_patch_size(self, patch_diff: str) -> Tuple[bool, Optional[str]]:
         """Validate patch size and bounds."""
         size_bytes = len(patch_diff.encode("utf-8"))

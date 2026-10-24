@@ -192,3 +192,14 @@ class HealthResponse(BaseModel):
 class ReadyResponse(BaseModel):
     ready: bool
     checks: Dict[str, bool] = {}
+
+
+# === Monkey Chaos Schemas ===
+from app.schemas.monkey import (
+    MonkeyVectorInfo,
+    MonkeyConfig,
+    MonkeyLaunchResponse,
+    MonkeyStatusResponse,
+    MonkeyVectorsCatalogResponse,
+)
+

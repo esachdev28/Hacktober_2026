@@ -10,10 +10,12 @@ import {
   Terminal,
   Activity,
   ShieldAlert,
+  Flame,
 } from 'lucide-react';
 
 export type NavTab =
   | 'overview'
+  | 'monkey_chaos'
   | 'launcher'
   | 'repo_mode'
   | 'workspace'
@@ -54,6 +56,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badge: 'SIGNATURE',
           badgeColor: 'bg-accent-chaos/20 text-accent-chaos border-accent-chaos/30',
           caption: 'Zero-Config Repo Repair',
+        },
+        {
+          id: 'monkey_chaos' as NavTab,
+          label: 'Monkey Chaos',
+          icon: Flame,
+          badge: 'STOCHASTIC',
+          badgeColor: 'bg-red-500/20 text-red-400 border-red-500/30',
+          caption: 'Autonomous Fault Injection',
         },
         {
           id: 'launcher' as NavTab,

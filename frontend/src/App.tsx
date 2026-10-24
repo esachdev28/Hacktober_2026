@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { Sidebar, NavTab } from './components/Sidebar';
 import { AuroraStarfieldBackground } from './components/ui/AuroraStarfieldBackground';
 import { OverviewPage } from './pages/OverviewPage';
+import { MonkeyChaosPage } from './pages/MonkeyChaosPage';
 import { LauncherPage } from './pages/LauncherPage';
 import { RepoIntakePage } from './pages/RepoIntakePage';
 import { WorkspacePage } from './pages/WorkspacePage';
@@ -59,6 +60,10 @@ export const App: React.FC = () => {
 
             {activeTab === 'repo_mode' && (
               <RepoIntakePage onSelectExperiment={handleSelectExperiment} />
+            )}
+
+            {activeTab === 'monkey_chaos' && (
+              <MonkeyChaosPage onExperimentLaunched={handleExperimentLaunched} />
             )}
 
             {activeTab === 'launcher' && (

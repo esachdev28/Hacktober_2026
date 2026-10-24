@@ -15,6 +15,10 @@ import {
   RepoDiagnosisPatchResponse,
   RepoPatchVerifyResponse,
   RepoPublishResponse,
+  MonkeyVectorInfo,
+  MonkeyConfig,
+  MonkeyLaunchResponse,
+  MonkeyStatusResponse,
 } from '../types';
 
 const BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
@@ -195,6 +199,22 @@ class ApiClient {
     return `${BASE_URL}/repository/export-patch/${experimentId}`;
   }
 
+  // Monkey Chaos Engine
+  async fetchMonkeyVectors(): Promise<{ vectors: MonkeyVectorInfo[]; intensities: string[] }> {
+    return this.request('/monkey/vectors');
+  }
+
+  async launchMonkeyChaos(config: MonkeyConfig): Promise<MonkeyLaunchResponse> {
+    return this.request('/monkey/launch', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
+  }
+
+  async fetchMonkeyStatus(experimentId: number): Promise<MonkeyStatusResponse> {
+    return this.request(`/monkey/experiments/${experimentId}/status`);
+  }
+
   // SSE Stream
   subscribeToExperiment(
     experimentId: number,
@@ -219,7 +239,8 @@ class ApiClient {
       'STAGE_VERIFYING', 'STAGE_COMPLETED', 'STAGE_FAILED',
       'FAULT_INJECTED', 'AI_DIAGNOSIS_SUCCESS', 'AI_UNAVAILABLE',
       'PATCH_PROPOSED', 'PATCH_APPLIED', 'PATCH_REJECTED',
-      'REPORT_READY', 'EXPERIMENT_CANCELLED'
+      'REPORT_READY', 'EXPERIMENT_CANCELLED',
+      'MONKEY_STRIKE_LAUNCHED', 'MONKEY_STRIKE_APPLIED',
     ];
 
     eventTypes.forEach((type) => {
