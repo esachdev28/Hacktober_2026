@@ -12,8 +12,8 @@ def get_inference_provider() -> BaseInferenceProvider:
         return NvidiaNIMProvider()
     if provider == "huggingface":
         return HuggingFaceQwenProvider()
-    # No credentials configured — return HF provider (will raise on call)
-    return HuggingFaceQwenProvider()
+    # Default to NVIDIA NIM as primary platform provider
+    return NvidiaNIMProvider()
 
 
 __all__ = [

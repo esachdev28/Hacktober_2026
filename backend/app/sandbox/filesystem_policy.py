@@ -23,8 +23,12 @@ FORBIDDEN_PATTERNS = [
     r".*\.zsh$",
 ]
 
-# Only files under demo_app (or target directory) are eligible for patching
-ALLOWED_SOURCE_EXTENSIONS = {".py", ".json", ".yaml", ".yml", ".txt", ".md"}
+# Permitted source extensions eligible for safe patching (scripts like .sh, .bash are excluded)
+ALLOWED_SOURCE_EXTENSIONS = {
+    ".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs",
+    ".go", ".rs", ".java", ".c", ".cpp", ".cc", ".cxx", ".h", ".hpp",
+    ".json", ".yaml", ".yml", ".toml", ".txt", ".md", ".sql", ".html", ".css",
+}
 
 
 class FilesystemSecurityPolicy:

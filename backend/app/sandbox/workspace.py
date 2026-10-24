@@ -103,11 +103,15 @@ class DisposableWorkspace:
             elif line.startswith("+++ b/") or line.startswith("+++ "):
                 target_filename = line[6:] if line.startswith("+++ b/") else line[4:]
                 # Normalize filename
-                target_filename = target_filename.strip()
-                if target_filename.startswith("demo_app/"):
+                target_filename = target_filename.strip().lstrip("/")
+                if (self.workspace_dir / target_filename).exists():
                     current_file = target_filename
-                else:
+                elif target_filename.startswith("demo_app/"):
+                    current_file = target_filename
+                elif (self.workspace_dir / "demo_app" / target_filename).exists():
                     current_file = f"demo_app/{target_filename}"
+                else:
+                    current_file = target_filename
                 file_changes[current_file] = []
             elif current_file and (line.startswith("+") or line.startswith("-") or line.startswith(" ") or line.startswith("@@")):
                 file_changes[current_file].append(line)
