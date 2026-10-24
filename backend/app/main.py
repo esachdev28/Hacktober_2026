@@ -1,6 +1,14 @@
 """CHAOSPATCH FastAPI Application Entrypoint."""
 import logging
+import sys
+from pathlib import Path
 from contextlib import asynccontextmanager
+
+# Ensure backend root is in sys.path regardless of execution working directory
+_backend_dir = Path(__file__).resolve().parent.parent
+if str(_backend_dir) not in sys.path:
+    sys.path.insert(0, str(_backend_dir))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
