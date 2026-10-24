@@ -73,7 +73,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
               <button
                 onClick={onNavigateLauncher}
-                className="flex items-center justify-center space-x-2 px-5 py-3 rounded-xl bg-accent-chaos hover:bg-amber-400 text-canvas font-mono text-xs font-bold transition-all shadow-glow-amber cursor-pointer group"
+                className="flex items-center justify-center space-x-2 px-5 py-3 rounded-xl bg-accent-chaos hover:bg-amber-400 text-canvas font-mono text-xs font-bold transition-all shadow-glow-amber hover:shadow-[0_0_24px_rgba(255,159,10,0.45)] cursor-pointer group btn-magnetic active:scale-[0.98]"
               >
                 <PlayCircle className="w-4 h-4 transition-transform group-hover:scale-110" />
                 <span>RUN NEW EXPERIMENT</span>

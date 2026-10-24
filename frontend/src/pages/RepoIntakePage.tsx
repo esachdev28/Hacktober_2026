@@ -255,7 +255,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
               <button
                 type="submit"
                 disabled={isInspecting || !repoUrl.trim()}
-                className="px-6 py-2.5 bg-accent-chaos hover:bg-amber-400 disabled:opacity-50 text-canvas font-bold text-xs rounded-lg transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-glow-amber shrink-0"
+                className="px-6 py-2.5 bg-accent-chaos hover:bg-amber-400 disabled:opacity-50 text-canvas font-bold text-xs rounded-lg transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-glow-amber hover:shadow-[0_0_22px_rgba(255,159,10,0.45)] btn-magnetic active:scale-[0.98] shrink-0"
               >
                 {isInspecting ? (
                   <>
@@ -406,7 +406,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
               <button
                 onClick={handleRunBaseline}
                 disabled={isRunningBaseline}
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-chaos hover:bg-amber-400 text-canvas font-bold text-xs transition cursor-pointer shadow-glow-amber"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-chaos hover:bg-amber-400 disabled:opacity-50 text-canvas font-bold text-xs transition-all cursor-pointer shadow-glow-amber hover:shadow-[0_0_22px_rgba(255,159,10,0.45)] btn-magnetic active:scale-[0.98]"
               >
                 {isRunningBaseline ? (
                   <>
@@ -523,7 +523,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
                   <button
                     onClick={handleDiagnoseAndPatch}
                     disabled={isDiagnosing}
-                    className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-purple hover:bg-purple-600 text-white font-bold text-xs transition cursor-pointer shadow-lg shadow-purple-500/20"
+                    className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-purple hover:bg-purple-600 disabled:opacity-50 text-white font-bold text-xs transition-all cursor-pointer shadow-lg shadow-purple-500/20 hover:shadow-[0_0_22px_rgba(168,85,247,0.45)] btn-magnetic active:scale-[0.98]"
                   >
                     {isDiagnosing ? (
                       <>
@@ -648,7 +648,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
                     <button
                       onClick={handleVerifyPatch}
                       disabled={!patchAuthorized || isVerifying}
-                      className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-success hover:bg-emerald-400 disabled:opacity-40 text-canvas font-bold text-xs transition cursor-pointer shadow-glow-emerald"
+                      className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-success hover:bg-emerald-400 disabled:opacity-40 text-canvas font-bold text-xs transition-all cursor-pointer shadow-glow-emerald hover:shadow-[0_0_22px_rgba(52,211,153,0.45)] btn-magnetic active:scale-[0.98]"
                     >
                       {isVerifying ? (
                         <>
@@ -736,7 +736,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
 
                   <button
                     onClick={() => setShowPublishModal(true)}
-                    className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent-chaos hover:bg-amber-400 text-canvas font-bold text-xs transition cursor-pointer shadow-glow-amber"
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent-chaos hover:bg-amber-400 text-canvas font-bold text-xs transition-all cursor-pointer shadow-glow-amber hover:shadow-[0_0_20px_rgba(255,159,10,0.4)] btn-magnetic active:scale-[0.98]"
                   >
                     <UploadCloud className="w-3.5 h-3.5" />
                     <span>Publish Dedicated Branch</span>

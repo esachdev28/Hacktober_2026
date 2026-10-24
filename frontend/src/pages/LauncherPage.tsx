@@ -139,7 +139,7 @@ export const LauncherPage: React.FC<LauncherPageProps> = ({ onExperimentLaunched
                 {/* Launch Action */}
                 <button
                   onClick={() => handleOpenConfirm(scen)}
-                  className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg bg-canvas-surface border border-canvas-border hover:border-accent-chaos hover:bg-accent-chaos/10 text-xs font-mono font-bold text-text-primary hover:text-accent-chaos transition cursor-pointer"
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-lg bg-canvas-surface border border-canvas-border hover:border-accent-chaos/60 hover:bg-accent-chaos/10 text-xs font-mono font-bold text-text-primary hover:text-accent-chaos transition-all cursor-pointer btn-magnetic active:scale-[0.985]"
                 >
                   <Flame className="w-3.5 h-3.5 text-accent-chaos" />
                   <span>Configure & Inject</span>
@@ -153,7 +153,7 @@ export const LauncherPage: React.FC<LauncherPageProps> = ({ onExperimentLaunched
       {/* Safety Confirmation Modal */}
       {showModal && selectedScenario && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="rounded-2xl border border-canvas-border bg-[#0D1220] max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono">
+          <div className="rounded-2xl border border-canvas-border bg-[#0D1220]/95 backdrop-blur-md max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3 text-accent-chaos">
                 <div className="p-2.5 rounded-xl bg-accent-chaos/10 border border-accent-chaos/30">
@@ -217,7 +217,7 @@ export const LauncherPage: React.FC<LauncherPageProps> = ({ onExperimentLaunched
               <button
                 onClick={handleLaunch}
                 disabled={launching}
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-accent-chaos hover:bg-amber-400 text-canvas font-mono text-xs font-bold transition shadow-glow-amber cursor-pointer"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-accent-chaos hover:bg-amber-400 text-canvas font-mono text-xs font-bold transition-all shadow-glow-amber hover:shadow-[0_0_22px_rgba(255,159,10,0.45)] cursor-pointer btn-magnetic active:scale-[0.98]"
               >
                 {launching ? (
                   <>

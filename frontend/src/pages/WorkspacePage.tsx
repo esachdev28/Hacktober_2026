@@ -318,7 +318,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
                     <button
                       onClick={handleApprovePatch}
                       disabled={acting}
-                      className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent-success hover:bg-emerald-400 text-canvas text-xs font-bold transition shadow cursor-pointer"
+                      className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent-success hover:bg-emerald-400 text-canvas text-xs font-bold transition-all shadow-glow-emerald hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] cursor-pointer btn-magnetic active:scale-[0.98]"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>APPROVE & VERIFY REPAIR</span>
@@ -326,7 +326,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
                     <button
                       onClick={handleRejectPatch}
                       disabled={acting}
-                      className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-canvas-card border border-canvas-border hover:border-accent-failure text-accent-failure text-xs font-bold transition cursor-pointer"
+                      className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-canvas-card border border-canvas-border hover:border-accent-failure text-accent-failure text-xs font-bold transition-all cursor-pointer btn-magnetic active:scale-[0.98]"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>REJECT PATCH</span>

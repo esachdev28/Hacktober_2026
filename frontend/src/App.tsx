@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar, NavTab } from './components/Sidebar';
+import { AuroraStarfieldBackground } from './components/ui/AuroraStarfieldBackground';
 import { OverviewPage } from './pages/OverviewPage';
 import { LauncherPage } from './pages/LauncherPage';
 import { RepoIntakePage } from './pages/RepoIntakePage';
@@ -25,7 +26,10 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-text-primary flex flex-col font-sans selection:bg-accent-chaos/30 selection:text-white">
+    <div className="relative min-h-screen bg-[#080B12] text-text-primary flex flex-col font-sans selection:bg-accent-chaos/30 selection:text-white overflow-x-hidden">
+      {/* Global Cinematic Aurora & 3D Starfield Background */}
+      <AuroraStarfieldBackground />
+
       {/* Top Bar with real runtime status */}
       <Header
         onToggleMobileNav={() => setMobileNavOpen(!mobileNavOpen)}
@@ -33,7 +37,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Container Layout */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative z-10">
         {/* Sidebar */}
         <Sidebar
           activeTab={activeTab}
@@ -44,7 +48,7 @@ export const App: React.FC = () => {
         />
 
         {/* Dynamic Main Workspace with Responsive Padding */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-grid-pattern">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-grid-pattern/20 relative">
           <div className="max-w-7xl mx-auto w-full">
             {activeTab === 'overview' && (
               <OverviewPage
