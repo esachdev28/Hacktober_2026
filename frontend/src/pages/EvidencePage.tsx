@@ -60,6 +60,7 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ onSelectExperiment }
           <input
             type="text"
             placeholder="Filter by source, experiment ID, or text..."
+            aria-label="Filter evidence by source, experiment ID, or text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="w-full bg-canvas-surface border border-canvas-border rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-text-primary placeholder:text-text-muted/60 focus:outline-none focus:border-accent-chaos"
@@ -72,6 +73,7 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ onSelectExperiment }
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
+            aria-label="Filter evidence by artifact type"
             className="bg-canvas-surface border border-canvas-border rounded-lg px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-chaos"
           >
             {types.map((t) => (

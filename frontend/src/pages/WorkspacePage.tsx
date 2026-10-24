@@ -13,6 +13,7 @@ import {
   Layers,
   Terminal,
   FileSearch,
+  RefreshCw,
 } from 'lucide-react';
 import { api } from '../api/client';
 import {
@@ -31,6 +32,7 @@ import { VerificationCard } from '../components/VerificationCard';
 import { ReportView } from '../components/ReportView';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { EmptyState } from '../components/ui/EmptyState';
+import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 
 interface WorkspacePageProps {
   experimentId: number | null;
@@ -49,12 +51,15 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
   const [report, setReport] = useState<ExperimentReport | null>(null);
   const [showFullReport, setShowFullReport] = useState(false);
   const [acting, setActing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Poll / fetch data
   const loadExperimentData = async (id: number) => {
     try {
       const exp = await api.getExperiment(id);
       setExperiment(exp);
+      setLoadError(null);
 
       const evs = await api.getExperimentEvents(id);
       setEvents(evs);
@@ -72,14 +77,24 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
         const rep = await api.getExperimentReport(id);
         setReport(rep);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching experiment details', err);
+      setLoadError(err?.message || 'Failed to fetch experiment details');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!experimentId) return;
+    if (!experimentId) {
+      setExperiment(null);
+      setLoading(false);
+      setLoadError(null);
+      return;
+    }
 
+    setLoading(true);
+    setLoadError(null);
     loadExperimentData(experimentId);
 
     // Subscribe to SSE
@@ -107,7 +122,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
     };
   }, [experimentId]);
 
-  if (!experimentId || !experiment) {
+  if (!experimentId) {
     return (
       <EmptyState
         icon={Terminal}
@@ -124,6 +139,71 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
         }
       />
     );
+  }
+
+  if (loading && !experiment) {
+    return (
+      <div className="space-y-6 font-mono" role="status" aria-live="polite">
+        <div className="p-6 rounded-xl border border-canvas-border bg-canvas-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center space-x-3">
+              <Loader2 className="w-5 h-5 text-accent-chaos animate-spin shrink-0" />
+              <span className="text-base font-bold text-text-primary">
+                Connecting to Experiment #EXP-{experimentId} Workspace...
+              </span>
+            </div>
+            <p className="text-xs text-text-muted">
+              Streaming telemetry, active sandbox logs, and diagnostic traces.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <LoadingSkeleton count={2} className="h-44 rounded-xl" />
+            <LoadingSkeleton count={1} className="h-48 rounded-xl" />
+          </div>
+          <div className="space-y-6">
+            <LoadingSkeleton count={1} className="h-80 rounded-xl" />
+            <LoadingSkeleton count={2} className="h-32 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError && !experiment) {
+    return (
+      <EmptyState
+        icon={AlertTriangle}
+        title={`Failed to Load Experiment #EXP-${experimentId}`}
+        description={loadError || 'Unable to retrieve experiment telemetry. Check backend connectivity and try again.'}
+        action={
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => {
+                setLoading(true);
+                setLoadError(null);
+                loadExperimentData(experimentId);
+              }}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-canvas-surface border border-canvas-border hover:border-accent-chaos text-xs font-mono text-accent-chaos transition cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry Connection</span>
+            </button>
+            <button
+              onClick={onNavigateLauncher}
+              className="px-4 py-2 rounded-lg bg-canvas-card border border-canvas-border hover:border-text-secondary text-xs font-mono text-text-secondary transition cursor-pointer"
+            >
+              Back to Launcher
+            </button>
+          </div>
+        }
+      />
+    );
+  }
+
+  if (!experiment) {
+    return null;
   }
 
   const latestRepair = repairs[repairs.length - 1];

@@ -14,10 +14,15 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(diff);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    if (!diff) return;
+    try {
+      await navigator.clipboard.writeText(diff);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback silently if clipboard permissions are restricted
+    }
   };
 
   const lines = diff ? diff.split('\n') : [];
@@ -36,7 +41,10 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         <div className="flex items-center space-x-2 shrink-0">
           <button
             onClick={handleCopy}
-            className="flex items-center space-x-1.5 text-xs text-text-muted hover:text-text-primary px-2.5 py-1 rounded bg-canvas-card border border-canvas-border hover:border-canvas-hover transition"
+            disabled={!diff.trim()}
+            aria-label="Copy patch diff to clipboard"
+            title="Copy patch diff to clipboard"
+            className="flex items-center space-x-1.5 text-xs text-text-muted hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 rounded bg-canvas-card border border-canvas-border hover:border-canvas-hover transition"
           >
             {copied ? (
               <>
@@ -63,44 +71,50 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
 
       {/* Code Display */}
       <div className="p-3 bg-[#05070B] overflow-x-auto max-h-96 text-xs leading-relaxed select-text">
-        {lines.map((line, idx) => {
-          let lineBg = '';
-          let lineTextColor = 'text-text-secondary';
-          let borderAccent = '';
+        {lines.length === 0 ? (
+          <div className="p-6 text-center text-text-muted/60 text-xs italic">
+            No diff lines available to display.
+          </div>
+        ) : (
+          lines.map((line, idx) => {
+            let lineBg = '';
+            let lineTextColor = 'text-text-secondary';
+            let borderAccent = '';
 
-          if (line.startsWith('+++') || line.startsWith('---')) {
-            lineBg = 'bg-canvas-surface/60 font-bold';
-            lineTextColor = 'text-text-primary';
-          } else if (line.startsWith('diff --git')) {
-            lineBg = 'bg-[#121826] font-bold';
-            lineTextColor = 'text-accent-chaos';
-          } else if (line.startsWith('@@')) {
-            lineBg = 'bg-accent-chaos/5 font-semibold';
-            lineTextColor = 'text-accent-chaos/90';
-          } else if (line.startsWith('+')) {
-            lineBg = 'bg-emerald-500/10';
-            lineTextColor = 'text-emerald-300';
-            borderAccent = 'border-l-2 border-emerald-500 pl-2';
-          } else if (line.startsWith('-')) {
-            lineBg = 'bg-rose-500/10';
-            lineTextColor = 'text-rose-300';
-            borderAccent = 'border-l-2 border-rose-500 pl-2';
-          }
+            if (line.startsWith('+++') || line.startsWith('---')) {
+              lineBg = 'bg-canvas-surface/60 font-bold';
+              lineTextColor = 'text-text-primary';
+            } else if (line.startsWith('diff --git')) {
+              lineBg = 'bg-[#121826] font-bold';
+              lineTextColor = 'text-accent-chaos';
+            } else if (line.startsWith('@@')) {
+              lineBg = 'bg-accent-chaos/5 font-semibold';
+              lineTextColor = 'text-accent-chaos/90';
+            } else if (line.startsWith('+')) {
+              lineBg = 'bg-emerald-500/10';
+              lineTextColor = 'text-emerald-300';
+              borderAccent = 'border-l-2 border-emerald-500 pl-2';
+            } else if (line.startsWith('-')) {
+              lineBg = 'bg-rose-500/10';
+              lineTextColor = 'text-rose-300';
+              borderAccent = 'border-l-2 border-rose-500 pl-2';
+            }
 
-          return (
-            <div
-              key={idx}
-              className={`flex items-baseline py-0.5 px-2 hover:bg-white/5 transition-colors font-mono ${lineBg} ${borderAccent}`}
-            >
-              <span className="w-8 shrink-0 select-none text-[10px] text-text-muted/40 text-right pr-3 font-mono">
-                {idx + 1}
-              </span>
-              <span className={`whitespace-pre ${lineTextColor}`}>
-                {line || ' '}
-              </span>
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={idx}
+                className={`flex items-baseline py-0.5 px-2 hover:bg-white/5 transition-colors font-mono ${lineBg} ${borderAccent}`}
+              >
+                <span className="w-8 shrink-0 select-none text-[10px] text-text-muted/40 text-right pr-3 font-mono">
+                  {idx + 1}
+                </span>
+                <span className={`whitespace-pre ${lineTextColor}`}>
+                  {line || ' '}
+                </span>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

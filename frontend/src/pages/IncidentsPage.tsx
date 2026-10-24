@@ -73,6 +73,7 @@ export const IncidentsPage: React.FC<IncidentsPageProps> = ({
           <input
             type="text"
             placeholder="Search by experiment ID, title, or root-cause..."
+            aria-label="Search incidents by experiment ID, title, or root cause"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="w-full bg-canvas-surface border border-canvas-border rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-text-primary placeholder:text-text-muted/60 focus:outline-none focus:border-accent-chaos"
@@ -86,6 +87,7 @@ export const IncidentsPage: React.FC<IncidentsPageProps> = ({
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
+            aria-label="Filter incidents by severity"
             className="bg-canvas-surface border border-canvas-border rounded-lg px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-accent-chaos"
           >
             <option value="all">ALL SEVERITIES</option>
