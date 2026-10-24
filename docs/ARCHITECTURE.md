@@ -4,7 +4,8 @@
 CHAOSPATCH is an autonomous AI reliability engineering workbench that:
 1. Injects controlled chaos faults into isolated disposable workspaces.
 2. Observes and packages structured evidence artifacts (`EVID-xxx`).
-3. Diagnoses root causes and synthesizes candidate patches via Hugging Face Qwen-30B.
+3. Diagnoses root causes and synthesizes candidate patches via a pluggable AI inference provider
+   (NVIDIA NIM MiniMax M3.1-Flash by default; Hugging Face Qwen-32B as fallback).
 4. Validates patch syntax, safety, and security bounds via AST and filesystem policies.
 5. Applies approved patches exclusively within isolated worktrees/directories.
 6. Independently verifies recovery using deterministic pytest suites.
@@ -25,9 +26,9 @@ CHAOSPATCH is an autonomous AI reliability engineering workbench that:
 |                              FastAPI Backend (Port 8000)                        |
 |                                                                                 |
 |  +--------------------+   +-----------------------+   +----------------------+  |
-|  | State Machine &    |-->| Evidence Collector    |-->| Hugging Face Qwen30B |  |
-|  | Orchestrator       |   | - Stable IDs          |   | Router Provider      |  |
-|  +--------------------+   | - Secret Sanitizer    |   +----------------------+  |
+|  | State Machine &    |-->| Evidence Collector    |-->| AI Inference Provider|  |
+|  | Orchestrator       |   | - Stable IDs          |   | NVIDIA NIM (primary) |  |
+|  +--------------------+   | - Secret Sanitizer    |   | HF Qwen (fallback)   |  |
 |            |              +-----------------------+              |              |
 |            v                          |                          v              |
 |  +--------------------+               v               +----------------------+  |

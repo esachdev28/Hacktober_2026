@@ -434,7 +434,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
               {isDiagnosing ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Requesting AI Diagnosis (Qwen-30B)...</span>
+                  <span>Requesting AI Diagnosis (NVIDIA NIM)...</span>
                 </>
               ) : (
                 <>

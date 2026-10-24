@@ -56,6 +56,8 @@ def run_baseline(payload: RepoBaselineRequest, db: Session = Depends(get_db)):
             db=db,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
 
@@ -151,13 +153,25 @@ def verify_patch(payload: RepoPatchVerifyRequest, db: Session = Depends(get_db))
 
         patch_diff = payload.patch_diff
         if not patch_diff:
-            # Use latest repair attempt
+            # Check if there is a saved repair to use; if not, return REJECTED via orchestrator
             latest_repair = db.query(RepairAttempt).filter(
                 RepairAttempt.experiment_id == payload.experiment_id
             ).order_by(RepairAttempt.attempt_number.desc()).first()
-            if not latest_repair or not latest_repair.patch_diff:
-                raise HTTPException(status_code=400, detail="No patch diff provided or found for experiment")
-            patch_diff = latest_repair.patch_diff
+            if latest_repair and latest_repair.patch_diff:
+                patch_diff = latest_repair.patch_diff
+            else:
+                # No diff available — return REJECTED contract response (not an error)
+                return {
+                    "experiment_id": payload.experiment_id,
+                    "verification_status": "REJECTED",
+                    "patch_valid": False,
+                    "target_failure_resolved": False,
+                    "regressions_detected": False,
+                    "exit_code": -1,
+                    "duration_ms": 0,
+                    "test_output_excerpt": "No patch diff provided and no saved repair attempt found for this experiment.",
+                    "summary": "Cannot verify: no patch diff is available.",
+                }
 
         result = RepositoryOrchestrator.apply_and_verify_patch(
             experiment_id=payload.experiment_id,
@@ -165,6 +179,8 @@ def verify_patch(payload: RepoPatchVerifyRequest, db: Session = Depends(get_db))
             db=db,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
 

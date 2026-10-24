@@ -185,12 +185,18 @@ export interface ProjectInspectionResult {
 
 export interface RepoBaselineResponse {
   experiment_id: number;
-  baseline_status: 'FAILURE_REPRODUCED' | 'BASELINE_PASSED' | 'INCONCLUSIVE' | 'UNSUPPORTED_TEST_ENVIRONMENT';
+  baseline_status:
+    | 'FAILURE_REPRODUCED'
+    | 'BASELINE_PASSED'
+    | 'UNSUPPORTED_TEST_ENVIRONMENT'
+    | 'DOCKER_UNAVAILABLE';
   exit_code: number;
+  test_command: string;
   duration_ms: number;
-  failing_test_identifier?: string | null;
   output_excerpt: string;
   evidence_count: number;
+  failing_tests: string[];
+  message: string;
 }
 
 export interface RepoDiagnosisPatchResponse {
@@ -208,14 +214,15 @@ export interface RepoDiagnosisPatchResponse {
 
 export interface RepoPatchVerifyResponse {
   experiment_id: number;
-  repair_id?: number | null;
-  verification_status: 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'FAILED' | 'REJECTED' | 'INCONCLUSIVE';
+  verification_status: 'VERIFIED' | 'FAILED' | 'REJECTED' | 'INCONCLUSIVE';
   patch_valid: boolean;
   target_failure_resolved: boolean;
   regressions_detected: boolean;
   exit_code: number;
   duration_ms: number;
   test_output_excerpt: string;
+  diff_hash?: string | null;
+  summary?: string;
 }
 
 export interface RepoPublishResponse {

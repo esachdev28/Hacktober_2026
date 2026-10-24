@@ -160,12 +160,12 @@ class RepositoryOrchestrator:
                 msg = f"No supported test adapter for {report.language}. Untrusted code will not be executed."
                 return {
                     "experiment_id": experiment_id,
-                    "status": status_str,
+                    "baseline_status": status_str,
                     "exit_code": -1,
                     "test_command": "NONE",
                     "duration_ms": 0,
-                    "stdout_excerpt": "",
-                    "stderr_excerpt": msg,
+                    "output_excerpt": msg,
+                    "evidence_count": 0,
                     "failing_tests": [],
                     "message": msg,
                 }
@@ -190,12 +190,12 @@ class RepositoryOrchestrator:
                 msg = str(docker_err)
                 return {
                     "experiment_id": experiment_id,
-                    "status": "DOCKER_UNAVAILABLE",
+                    "baseline_status": "DOCKER_UNAVAILABLE",
                     "exit_code": 1,
                     "test_command": test_cmd,
                     "duration_ms": 0,
-                    "stdout_excerpt": "",
-                    "stderr_excerpt": msg,
+                    "output_excerpt": msg,
+                    "evidence_count": 0,
                     "failing_tests": [],
                     "message": msg,
                 }
@@ -227,14 +227,26 @@ class RepositoryOrchestrator:
             db.add(db_evid)
             db.commit()
 
+            # Count evidence recorded for this experiment
+            evidence_count = db.query(Evidence).filter(Evidence.experiment_id == exp.id).count()
+
+            # Unified output for the frontend (stdout + stderr, sanitized and bounded)
+            combined_output = ""
+            if sanitized_stdout.strip():
+                combined_output += sanitized_stdout[:1500]
+            if sanitized_stderr.strip():
+                combined_output += ("\n--- STDERR ---\n" if combined_output else "") + sanitized_stderr[:500]
+            if not combined_output.strip():
+                combined_output = f"[No output captured. Exit code: {exec_result.exit_code}]\nTest command: {test_cmd}"
+
             return {
                 "experiment_id": experiment_id,
-                "status": status_str,
+                "baseline_status": status_str,
                 "exit_code": exec_result.exit_code,
                 "test_command": test_cmd,
                 "duration_ms": exec_result.duration_ms,
-                "stdout_excerpt": sanitized_stdout[:1000],
-                "stderr_excerpt": sanitized_stderr[:1000],
+                "output_excerpt": combined_output[:2000],
+                "evidence_count": evidence_count,
                 "failing_tests": [],
                 "message": msg,
             }
@@ -260,18 +272,33 @@ class RepositoryOrchestrator:
             if not exp:
                 raise ValueError(f"Experiment {experiment_id} not found")
 
-            # 1. Patch Safety Validation
+            # 1. Reject empty / placeholder diffs immediately
+            stripped_diff = (patch_diff or "").strip()
+            if not stripped_diff or (stripped_diff.startswith("#") and len(stripped_diff) < 100):
+                return {
+                    "experiment_id": experiment_id,
+                    "verification_status": "REJECTED",
+                    "patch_valid": False,
+                    "target_failure_resolved": False,
+                    "regressions_detected": False,
+                    "exit_code": -1,
+                    "duration_ms": 0,
+                    "test_output_excerpt": "Rejected: diff is empty or a placeholder comment — no patch to verify.",
+                    "summary": "Patch diff was empty or a placeholder; cannot verify.",
+                }
+
+            # 2. Patch Safety Validation
             val_result = PatchValidator.validate_patch(patch_diff)
             if not val_result.is_valid:
                 return {
                     "experiment_id": experiment_id,
-                    "verification_outcome": "REJECTED",
-                    "safety_validation_passed": False,
-                    "validation_issues": val_result.issues,
-                    "baseline_failure_passed": False,
+                    "verification_status": "REJECTED",
+                    "patch_valid": False,
+                    "target_failure_resolved": False,
                     "regressions_detected": False,
+                    "exit_code": -1,
                     "duration_ms": 0,
-                    "diff_hash": "REJECTED",
+                    "test_output_excerpt": f"Safety validation failed: {'; '.join(val_result.issues)}",
                     "summary": f"Patch safety validation rejected: {'; '.join(val_result.issues)}",
                 }
 
@@ -281,7 +308,7 @@ class RepositoryOrchestrator:
                 raise FileNotFoundError(f"Repository not found for {exp.repo_owner}/{exp.repo_name}")
             repo_dir = matching_dirs[0]
 
-            # 2. Apply patch diff to working files
+            # 3. Apply patch diff to workspace files
             ws = DisposableWorkspace(experiment_id, base_dir=repos_base)
             ws.workspace_dir = repo_dir
             ws.policy = FilesystemSecurityPolicy(workspace_root=repo_dir)
@@ -290,64 +317,103 @@ class RepositoryOrchestrator:
             if not applied:
                 return {
                     "experiment_id": experiment_id,
-                    "verification_outcome": "FAILED",
-                    "safety_validation_passed": True,
-                    "validation_issues": [apply_msg],
-                    "baseline_failure_passed": False,
+                    "verification_status": "FAILED",
+                    "patch_valid": True,
+                    "target_failure_resolved": False,
                     "regressions_detected": False,
+                    "exit_code": -1,
                     "duration_ms": 0,
-                    "diff_hash": "APPLY_FAILED",
-                    "summary": f"Failed to apply patch: {apply_msg}",
+                    "test_output_excerpt": f"Patch apply failed: {apply_msg}",
+                    "summary": f"Failed to apply patch to workspace: {apply_msg}",
                 }
 
-            # 3. Independent Verification in Docker
+            # 4. Independent Verification — MUST derive verdict from actual execution
             adapter, report, _ = ProjectDetector.inspect(repo_dir, exp.project_root or "/")
             test_cmd = report.test_command or "pytest -v"
             image = adapter.get_docker_image()
             target_sub = (repo_dir / (exp.project_root or "/").strip("/")).resolve()
 
             start_t = time.time()
-            exec_res = DockerExecutionRunner.run_in_container(
-                workspace_dir=target_sub,
-                command=test_cmd,
-                image=image,
-                network_enabled=False,
-                timeout_seconds=60,
-            )
-            duration_ms = int((time.time() - start_t) * 1000)
+            try:
+                exec_res = DockerExecutionRunner.run_in_container(
+                    workspace_dir=target_sub,
+                    command=test_cmd,
+                    image=image,
+                    network_enabled=False,
+                    timeout_seconds=60,
+                )
+                duration_ms = int((time.time() - start_t) * 1000)
+            except DockerUnavailableError as docker_err:
+                duration_ms = int((time.time() - start_t) * 1000)
+                exp.status = ExperimentStatus.VERIFICATION_FAILED.value
+                db.commit()
+                # INCONCLUSIVE — tests did not execute, never claim success
+                return {
+                    "experiment_id": experiment_id,
+                    "verification_status": "INCONCLUSIVE",
+                    "patch_valid": True,
+                    "target_failure_resolved": False,
+                    "regressions_detected": False,
+                    "exit_code": -1,
+                    "duration_ms": duration_ms,
+                    "test_output_excerpt": (
+                        "INCONCLUSIVE: Docker daemon is unavailable — post-patch tests did not execute. "
+                        f"Docker error: {docker_err}"
+                    ),
+                    "summary": "Verification is INCONCLUSIVE: no independent tests ran (Docker unavailable).",
+                }
 
             import hashlib
             diff_hash = hashlib.sha256(patch_diff.encode("utf-8")).hexdigest()[:12]
 
-            outcome = "VERIFIED" if exec_res.passed else "FAILED"
-            exp.final_verified = exec_res.passed
-            exp.status = ExperimentStatus.COMPLETED.value if exec_res.passed else ExperimentStatus.VERIFICATION_FAILED.value
+            tests_passed = exec_res.passed
+            verification_status = "VERIFIED" if tests_passed else "FAILED"
+            exp.final_verified = tests_passed
+            exp.status = (
+                ExperimentStatus.COMPLETED.value if tests_passed
+                else ExperimentStatus.VERIFICATION_FAILED.value
+            )
             db.commit()
+
+            # Sanitize and assemble terminal output for the UI
+            test_stdout = sanitize_secrets(exec_res.stdout or "")
+            test_stderr = sanitize_secrets(exec_res.stderr or "")
+            terminal_output = test_stdout[:1200]
+            if test_stderr.strip():
+                terminal_output += "\n--- STDERR ---\n" + test_stderr[:300]
+            if not terminal_output.strip():
+                terminal_output = f"[No terminal output captured] Exit code: {exec_res.exit_code}"
 
             # Record VerificationRun in DB
             v_run = VerificationRun(
                 experiment_id=exp.id,
                 check_name=f"Post-Patch Test Suite ({test_cmd})",
-                status=VerificationStatus.PASSED.value if exec_res.passed else VerificationStatus.FAILED.value,
+                status=VerificationStatus.PASSED.value if tests_passed else VerificationStatus.FAILED.value,
                 expected_result="Test suite exits with code 0",
                 actual_result=f"Exited with code {exec_res.exit_code}",
                 duration_ms=duration_ms,
-                output=exec_res.stdout + ("\n" + exec_res.stderr if exec_res.stderr else ""),
+                output=terminal_output,
             )
             db.add(v_run)
             db.commit()
 
             return {
                 "experiment_id": experiment_id,
-                "verification_outcome": outcome,
-                "safety_validation_passed": True,
-                "validation_issues": [],
-                "baseline_failure_passed": exec_res.passed,
+                "verification_status": verification_status,
+                "patch_valid": True,
+                "target_failure_resolved": tests_passed,
                 "regressions_detected": False,
+                "exit_code": exec_res.exit_code,
                 "duration_ms": duration_ms,
+                "test_output_excerpt": terminal_output[:2000],
                 "diff_hash": diff_hash,
-                "summary": "Independent verification PASSED in isolated Docker container." if exec_res.passed else "Verification FAILED: Tests failed after applying patch.",
+                "summary": (
+                    "Independent verification PASSED in isolated Docker container."
+                    if tests_passed
+                    else f"Verification FAILED: tests exited with code {exec_res.exit_code} after applying patch."
+                ),
             }
         finally:
             if should_close:
                 db.close()
+
