@@ -118,6 +118,7 @@ PYTHONPATH=backend:. pytest tests/ -v
 ---
 
 ## 7. Documentation Index
+- [**Developer Quickstart**](docs/DEVELOPER_QUICKSTART.md) ← **start here**
 - [Architecture Details](docs/ARCHITECTURE.md)
 - [API Reference](docs/API.md)
 - [Security Specifications](docs/SECURITY.md)
