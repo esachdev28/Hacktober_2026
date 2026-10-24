@@ -3,7 +3,7 @@ import React from 'react';
 export type SystemHealthState = 'healthy' | 'degraded' | 'offline' | 'checking' | 'ready' | 'not_configured';
 
 interface StatusIndicatorProps {
-  status: string;
+  status?: string | null;
   label?: string;
   size?: 'sm' | 'md';
   pulse?: boolean;
@@ -17,7 +17,8 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
   pulse = false,
   className = '',
 }) => {
-  const norm = status.toUpperCase();
+  const safeStatus = (status && typeof status === 'string' ? status : 'UNKNOWN').trim();
+  const norm = safeStatus.toUpperCase();
 
   let colorClasses = 'bg-canvas-surface text-text-muted border-canvas-border';
   let dotColor = 'bg-text-muted';
@@ -69,7 +70,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
     dotColor = 'bg-accent-info';
   }
 
-  const displayText = label || status;
+  const displayText = label || safeStatus;
   const isPulsing = pulse || ['INJECTING', 'BASELINING', 'DIAGNOSING', 'APPLYING', 'VERIFYING', 'CHECKING'].includes(norm);
 
   return (

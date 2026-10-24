@@ -8,7 +8,11 @@ interface VerificationVerdictProps {
 }
 
 export const VerificationVerdict: React.FC<VerificationVerdictProps> = ({ result, className = '' }) => {
-  const status = result.verification_status;
+  const status =
+    result?.verification_status ||
+    (result as any)?.verification_outcome ||
+    (result as any)?.status ||
+    'INCONCLUSIVE';
 
   const isVerified = status === 'VERIFIED';
   const isFailed = status === 'FAILED';

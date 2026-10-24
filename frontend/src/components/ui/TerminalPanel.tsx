@@ -15,7 +15,7 @@ interface TerminalPanelProps {
 export const TerminalPanel: React.FC<TerminalPanelProps> = ({
   title = 'Terminal Output',
   command,
-  output,
+  output = '',
   exitCode,
   durationMs,
   statusLabel,
@@ -25,8 +25,10 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
   const [copied, setCopied] = useState(false);
   const [wrap, setWrap] = useState(false);
 
+  const safeOutput = output || '';
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(output);
+    navigator.clipboard.writeText(safeOutput);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

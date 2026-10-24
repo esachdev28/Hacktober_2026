@@ -439,7 +439,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
             </div>
 
             {baselineResult && (
-              <StatusIndicator status={baselineResult.baseline_status} size="sm" />
+              <StatusIndicator status={baselineResult.baseline_status || (baselineResult as any).status} size="sm" />
             )}
           </div>
 
@@ -455,36 +455,48 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
               <div className="font-bold">Baseline Execution Error:</div>
               <div>{baselineError}</div>
             </div>
-          ) : baselineResult ? (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#070A10] border border-canvas-border text-xs">
-                <div>
-                  <span className="text-text-muted">Baseline Verdict: </span>
-                  <span className="font-bold text-text-primary">{baselineResult.baseline_status}</span>
-                </div>
-                <div>
-                  <span className="text-text-muted">Exit Code: </span>
-                  <code className="text-text-primary font-bold">{baselineResult.exit_code}</code>
-                </div>
-                <div>
-                  <span className="text-text-muted">Duration: </span>
-                  <span className="text-text-primary font-bold">{baselineResult.duration_ms} ms</span>
-                </div>
-                <div>
-                  <span className="text-text-muted">Evidence Items: </span>
-                  <span className="text-accent-chaos font-bold">{baselineResult.evidence_count} captured</span>
-                </div>
-              </div>
+          ) : baselineResult ? (() => {
+            const bStatus = baselineResult.baseline_status || (baselineResult as any).status || 'UNKNOWN';
+            const bOutput = baselineResult.output_excerpt || 
+              (baselineResult as any).stdout_excerpt || 
+              (baselineResult as any).stderr_excerpt || 
+              baselineResult.message || 
+              '';
+            const bExit = baselineResult.exit_code ?? 0;
+            const bDuration = baselineResult.duration_ms ?? 0;
+            const bEvidence = baselineResult.evidence_count ?? (baselineResult as any).evidence_items_count ?? 0;
+            const bCommand = baselineResult.test_command || 'pytest';
 
-              {/* Terminal Panel with Actual Captured Stdout / Stderr */}
-              <TerminalPanel
-                title="Baseline Test Runner Output (Docker Sandbox)"
-                command={baselineResult.test_command}
-                output={baselineResult.output_excerpt}
-                exitCode={baselineResult.exit_code}
-                durationMs={baselineResult.duration_ms}
-                statusLabel={baselineResult.baseline_status}
-              />
+            return (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#070A10] border border-canvas-border text-xs">
+                  <div>
+                    <span className="text-text-muted">Baseline Verdict: </span>
+                    <span className="font-bold text-text-primary">{bStatus}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-muted">Exit Code: </span>
+                    <code className="text-text-primary font-bold">{bExit}</code>
+                  </div>
+                  <div>
+                    <span className="text-text-muted">Duration: </span>
+                    <span className="text-text-primary font-bold">{bDuration} ms</span>
+                  </div>
+                  <div>
+                    <span className="text-text-muted">Evidence Items: </span>
+                    <span className="text-accent-chaos font-bold">{bEvidence} captured</span>
+                  </div>
+                </div>
+
+                {/* Terminal Panel with Actual Captured Stdout / Stderr */}
+                <TerminalPanel
+                  title="Baseline Test Runner Output (Docker Sandbox)"
+                  command={bCommand}
+                  output={bOutput}
+                  exitCode={bExit}
+                  durationMs={bDuration}
+                  statusLabel={bStatus}
+                />
 
               {/* Failing Tests Pills */}
               {baselineResult.failing_tests && baselineResult.failing_tests.length > 0 && (
@@ -528,7 +540,8 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
                 </div>
               )}
             </div>
-          ) : null}
+            );
+          })() : null}
         </section>
       )}
 

@@ -494,3 +494,34 @@ class TestResponseContract:
         assert res.status_code == 200
         assert res.headers["content-type"].startswith("text/x-diff")
         assert "CHAOSPATCH" in res.text
+
+    def test_baseline_response_contract_fields_and_defensive_compatibility(self, tmp_path):
+        """Regression test ensuring baseline returns all fields required by StatusIndicator and TerminalPanel."""
+        from app.schemas.repository import RepoBaselineResponse
+        exp_id = _intake("https://github.com/test-org/baseline-contract-repo", tmp_path)
+
+        with patch("app.services.repository_orchestrator.RepositoryOrchestrator.run_baseline_checks") as mock_run:
+            mock_run.return_value = {
+                "experiment_id": exp_id,
+                "baseline_status": "FAILURE_REPRODUCED",
+                "exit_code": 1,
+                "test_command": "pytest -v",
+                "duration_ms": 1200,
+                "output_excerpt": "FAILED tests/test_core.py::test_fail - AssertionError",
+                "evidence_count": 2,
+                "failing_tests": ["test_fail"],
+                "message": "Failure reproduced",
+            }
+            res = client.post("/api/repository/run-baseline", json={"experiment_id": exp_id})
+            assert res.status_code == 200, res.text
+            data = res.json()
+            assert "baseline_status" in data
+            assert data["baseline_status"] == "FAILURE_REPRODUCED"
+            assert "output_excerpt" in data
+            assert data["output_excerpt"] != ""
+            assert "evidence_count" in data
+            assert isinstance(data["evidence_count"], int)
+            # Must satisfy Pydantic schema strictly
+            validated = RepoBaselineResponse(**data)
+            assert validated.baseline_status == "FAILURE_REPRODUCED"
+
