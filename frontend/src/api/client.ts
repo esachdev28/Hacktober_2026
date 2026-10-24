@@ -10,6 +10,11 @@ import {
   SystemSettings,
   InferenceTestResult,
   ExperimentReport,
+  ProjectInspectionResult,
+  RepoBaselineResponse,
+  RepoDiagnosisPatchResponse,
+  RepoPatchVerifyResponse,
+  RepoPublishResponse,
 } from '../types';
 
 const BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
@@ -129,6 +134,65 @@ class ApiClient {
     return this.request('/settings/inference-test', {
       method: 'POST',
     });
+  }
+
+  // Universal Public GitHub Repository Mode
+  async intakeRepo(repoUrl: string, projectRoot = '/', targetBranch?: string): Promise<ProjectInspectionResult> {
+    return this.request('/repository/intake', {
+      method: 'POST',
+      body: JSON.stringify({
+        repo_url: repoUrl,
+        project_root: projectRoot,
+        target_branch: targetBranch,
+      }),
+    });
+  }
+
+  async runRepoBaseline(experimentId: number, testFilter?: string): Promise<RepoBaselineResponse> {
+    return this.request('/repository/run-baseline', {
+      method: 'POST',
+      body: JSON.stringify({
+        experiment_id: experimentId,
+        test_filter: testFilter,
+      }),
+    });
+  }
+
+  async diagnoseAndPatchRepo(experimentId: number): Promise<RepoDiagnosisPatchResponse> {
+    return this.request(`/repository/diagnose-and-patch?experiment_id=${experimentId}`, {
+      method: 'POST',
+    });
+  }
+
+  async verifyRepoPatch(experimentId: number, patchDiff?: string): Promise<RepoPatchVerifyResponse> {
+    return this.request('/repository/verify-patch', {
+      method: 'POST',
+      body: JSON.stringify({
+        experiment_id: experimentId,
+        patch_diff: patchDiff,
+      }),
+    });
+  }
+
+  async publishRepoBranch(
+    experimentId: number,
+    githubToken: string,
+    branchName?: string,
+    commitMessage?: string
+  ): Promise<RepoPublishResponse> {
+    return this.request('/repository/publish-branch', {
+      method: 'POST',
+      body: JSON.stringify({
+        experiment_id: experimentId,
+        github_token: githubToken,
+        branch_name: branchName,
+        commit_message: commitMessage,
+      }),
+    });
+  }
+
+  getPatchExportUrl(experimentId: number): string {
+    return `${BASE_URL}/repository/export-patch/${experimentId}`;
   }
 
   // SSE Stream

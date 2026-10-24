@@ -8,6 +8,7 @@ from app.models.experiments import Evidence, EvidenceType, Severity
 SECRET_PATTERNS = [
     (r"(?i)(bearer\s+)[a-zA-Z0-9_\-\.]{15,}", r"\1[REDACTED_TOKEN]"),
     (r"(?i)(hf_[a-zA-Z0-9]{20,})", r"hf_[REDACTED]"),
+    (r"(?i)(nvapi-[a-zA-Z0-9_\-]{20,})", r"nvapi-[REDACTED]"),
     (r"(?i)(api[_\-]?key['\":\s=]+)['\"][a-zA-Z0-9_\-\.]{10,}['\"]", r"\1'[REDACTED]'"),
     (r"(?i)(password['\":\s=]+)['\"][^'\"]+['\"]", r"\1'[REDACTED]'"),
     (r"(?i)(secret['\":\s=]+)['\"][^'\"]+['\"]", r"\1'[REDACTED]'"),

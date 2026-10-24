@@ -23,6 +23,36 @@ def get_db():
 
 
 def init_db():
-    """Create all tables."""
+    """Create all tables and run lightweight migrations."""
     from app.models import experiments  # noqa: F401 - import to register models
     Base.metadata.create_all(bind=engine)
+
+    # Safe lightweight schema migration for SQLite
+    with engine.connect() as conn:
+        try:
+            # Check existing columns in experiments table
+            result = conn.exec_driver_sql("PRAGMA table_info(experiments)")
+            existing_cols = {row[1] for row in result.fetchall()}
+            
+            repo_columns = [
+                ("repo_url", "VARCHAR(255)"),
+                ("repo_owner", "VARCHAR(100)"),
+                ("repo_name", "VARCHAR(100)"),
+                ("default_branch", "VARCHAR(100)"),
+                ("base_commit_sha", "VARCHAR(40)"),
+                ("detected_language", "VARCHAR(50)"),
+                ("detected_framework", "VARCHAR(50)"),
+                ("project_root", "VARCHAR(255) DEFAULT '/'"),
+                ("publish_status", "VARCHAR(30)"),
+                ("published_branch", "VARCHAR(100)"),
+                ("published_commit_sha", "VARCHAR(40)"),
+                ("published_branch_url", "VARCHAR(255)"),
+            ]
+            
+            for col_name, col_type in repo_columns:
+                if col_name not in existing_cols:
+                    conn.exec_driver_sql(f"ALTER TABLE experiments ADD COLUMN {col_name} {col_type}")
+            conn.commit()
+        except Exception:
+            pass
+

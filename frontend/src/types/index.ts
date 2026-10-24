@@ -20,6 +20,18 @@ export interface Experiment {
   scenario_type: string;
   status: ExperimentStatus;
   target_environment: string;
+  repo_url?: string | null;
+  repo_owner?: string | null;
+  repo_name?: string | null;
+  default_branch?: string | null;
+  base_commit_sha?: string | null;
+  detected_language?: string | null;
+  detected_framework?: string | null;
+  project_root?: string | null;
+  publish_status?: string | null;
+  published_branch?: string | null;
+  published_commit_sha?: string | null;
+  published_branch_url?: string | null;
   started_at: string | null;
   completed_at: string | null;
   duration_ms: number | null;
@@ -140,3 +152,78 @@ export interface ExperimentReport {
   events: ExperimentEvent[];
   summary: Record<string, any>;
 }
+
+export interface DetectedProjectCapability {
+  language: string;
+  can_inspect: boolean;
+  can_prepare_deps: boolean;
+  can_run_tests: boolean;
+  isolation_mode: string;
+  notes?: string | null;
+}
+
+export interface ProjectInspectionResult {
+  experiment_id: number;
+  repo_url: string;
+  owner: string;
+  name: string;
+  canonical_id: string;
+  default_branch: string;
+  base_commit_sha: string;
+  is_public: boolean;
+  detected_languages: string[];
+  primary_language: string;
+  detected_frameworks: string[];
+  manifest_files: string[];
+  test_framework?: string | null;
+  test_command?: string | null;
+  possible_project_roots: string[];
+  is_monorepo: boolean;
+  capabilities: DetectedProjectCapability;
+  status: string;
+}
+
+export interface RepoBaselineResponse {
+  experiment_id: number;
+  baseline_status: 'FAILURE_REPRODUCED' | 'BASELINE_PASSED' | 'INCONCLUSIVE' | 'UNSUPPORTED_TEST_ENVIRONMENT';
+  exit_code: number;
+  duration_ms: number;
+  failing_test_identifier?: string | null;
+  output_excerpt: string;
+  evidence_count: number;
+}
+
+export interface RepoDiagnosisPatchResponse {
+  experiment_id: number;
+  repair_id: number;
+  title: string;
+  root_cause: string;
+  confidence: number;
+  proposed_patch_diff: string;
+  explanation: string;
+  risk_summary: string;
+  is_ai_generated: boolean;
+  provider: string;
+}
+
+export interface RepoPatchVerifyResponse {
+  experiment_id: number;
+  repair_id?: number | null;
+  verification_status: 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'FAILED' | 'REJECTED' | 'INCONCLUSIVE';
+  patch_valid: boolean;
+  target_failure_resolved: boolean;
+  regressions_detected: boolean;
+  exit_code: number;
+  duration_ms: number;
+  test_output_excerpt: string;
+}
+
+export interface RepoPublishResponse {
+  experiment_id: number;
+  status: 'PUBLISHED' | 'FORBIDDEN_BRANCH' | 'PUBLISH_AUTH_REQUIRED' | 'PUSH_FAILED' | 'BASE_COMMIT_MISMATCH';
+  published_branch?: string | null;
+  commit_sha?: string | null;
+  remote_branch_url?: string | null;
+  message?: string;
+}
+

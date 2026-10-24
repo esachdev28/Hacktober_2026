@@ -14,6 +14,7 @@ from app.api.routes import (
     experiments_router,
     incidents_router,
     settings_router,
+    repository_router,
 )
 
 
@@ -31,7 +32,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="CHAOSPATCH API",
     description="Inject failure. Let AI recover. Automated chaos engineering & AI repair verification platform.",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -51,6 +52,7 @@ app.include_router(scenarios_router, prefix="/api")
 app.include_router(experiments_router, prefix="/api")
 app.include_router(incidents_router, prefix="/api")
 app.include_router(settings_router, prefix="/api")
+app.include_router(repository_router, prefix="/api")
 
 
 @app.get("/")

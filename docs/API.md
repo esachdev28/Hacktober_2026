@@ -63,3 +63,18 @@ Interactive Swagger Docs: `http://localhost:8000/docs`
   - Non-sensitive system configuration, model identifiers, limits, and runtime flags.
 - `POST /api/settings/inference-test`
   - Live round-trip latency and connectivity test against Hugging Face Qwen router.
+
+### 7. Universal Public GitHub Repository Mode
+- `POST /api/repository/intake`
+  - Validates GitHub HTTPS URL, clones into isolated workspace, discovers project roots, manifests, frameworks, and detects language capabilities.
+- `POST /api/repository/run-baseline`
+  - Executes bounded baseline test commands inside disposable Docker container (`--network none`) and packages evidence. Returns `FAILURE_REPRODUCED`, `BASELINE_PASSED`, `INCONCLUSIVE`, or `UNSUPPORTED_TEST_ENVIRONMENT`.
+- `POST /api/repository/diagnose-and-patch?experiment_id={id}`
+  - Analyzes baseline test evidence with Hugging Face Qwen-30B, extracts unified diff, and returns structured diagnosis.
+- `POST /api/repository/verify-patch`
+  - Validates patch safety (AST syntax, path traversal, forbidden files), applies in container worktree, and re-executes tests in Docker to return independent verdict (`VERIFIED`, `PARTIALLY_VERIFIED`, `FAILED`, `REJECTED`, or `INCONCLUSIVE`).
+- `POST /api/repository/publish-branch`
+  - Publishes verified patch to a dedicated repair branch (`chaospatch/repair-<id>`) with user-provided GitHub Personal Access Token. Strictly forbids default branch pushes (`main`/`master`), blocks force-pushes, and never merges or creates automated PRs.
+- `GET /api/repository/export-patch/{experiment_id}`
+  - Downloads unified diff as a standard `.patch` file.
+

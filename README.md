@@ -9,9 +9,11 @@
 CHAOSPATCH is an autonomous AI-powered reliability engineering workbench built for modern SRE teams. It deliberately introduces controlled failure modes into isolated test applications, collects structured evidence artifacts, leverages Qwen-30B to diagnose root causes and propose minimal code repairs, applies validated patches in disposable workspaces, and independently verifies whether the application has truly recovered.
 
 ### Key Value Proposition
+- **Universal Public GitHub Mode:** Input any public GitHub repository URL (`https://github.com/owner/project`). CHAOSPATCH inspects project manifests, detects technology stacks (Python, Node, Go, Rust, Java), establishes bounded baselines, synthesizes repairs, and validates fixes in Docker containers.
 - **No Hallucinated Victory:** A model-generated statement that a fix succeeded is never sufficient. The verification engine independently runs deterministic tests and inspects real process exit codes.
-- **Strict Sandbox Isolation:** Experiments run in disposable sandboxes (`workspaces/exp_<id>/`). Canonical source code and host environments remain untouched.
+- **Strict Sandbox & Docker Isolation:** Experiments run in disposable sandboxes (`workspaces/repos/` and `workspaces/exp_<id>/`) with container isolation enforcing `--network none`, `--memory 1g`, and non-root execution.
 - **Safety Validated Patches:** AST syntax checking, path traversal guards, and forbidden pattern filters reject hazardous patches before application.
+- **Guarded Branch Publishing:** For repositories where the user holds write permissions, publish verified patches to dedicated branches (`chaospatch/repair-<id>`). Pushing to default branches (`main`/`master`), force-pushes, and automatic pull requests are strictly blocked.
 - **Real-time SRE Workspace:** Interactive 8-stage state machine with live Server-Sent Events (SSE), diff viewer, and evidence explorer.
 
 ---
@@ -79,8 +81,8 @@ npm run dev
 ---
 
 ## 4. Running Automated Tests
-
-Run the complete 21-test automated suite (state machine, patch safety validator, evidence secret sanitizer, API endpoints, and all 3 deterministic scenarios):
+ 
+Run the complete 38-test automated suite (state machine, patch safety validator, evidence secret sanitizer, API endpoints, git service safeguards, Docker isolation runner, language adapters, repository mode endpoints, and all 3 deterministic scenarios):
 ```bash
 source .venv/bin/activate
 PYTHONPATH=backend:. pytest tests/ -v

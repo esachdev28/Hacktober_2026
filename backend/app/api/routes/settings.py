@@ -5,7 +5,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.db.database import get_db
 from app.schemas import SettingsResponse, InferenceTestResponse
-from app.providers.huggingface_qwen import HuggingFaceQwenProvider
+from app.providers import get_inference_provider
 
 router = APIRouter(tags=["Settings"])
 
@@ -19,13 +19,21 @@ def get_settings(db: Session = Depends(get_db)):
     except Exception:
         db_status = "offline"
 
-    provider = HuggingFaceQwenProvider()
+    active = settings.active_provider
+    if active == "nvidia":
+        model_id = settings.nvidia_model_id
+        provider_name = "nvidia-nim"
+        endpoint = "https://integrate.api.nvidia.com/v1"
+    else:
+        model_id = settings.hf_model_id
+        provider_name = settings.hf_provider
+        endpoint = settings.hf_inference_endpoint
 
     return SettingsResponse(
-        model_id=settings.hf_model_id,
-        provider=settings.hf_provider,
-        inference_endpoint=settings.hf_inference_endpoint,
-        has_credentials=bool(settings.hf_token),
+        model_id=model_id,
+        provider=provider_name,
+        inference_endpoint=endpoint,
+        has_credentials=settings.has_inference_credentials,
         max_repair_attempts=settings.max_repair_attempts,
         experiment_timeout_seconds=settings.experiment_timeout_seconds,
         model_temperature=settings.model_temperature,
@@ -37,22 +45,26 @@ def get_settings(db: Session = Depends(get_db)):
 
 
 @router.post("/settings/inference-test", response_model=InferenceTestResponse)
+@router.post("/settings/test-inference", response_model=InferenceTestResponse)
 def test_inference_connectivity():
-    """Live connectivity test against Hugging Face Qwen inference router."""
-    provider = HuggingFaceQwenProvider()
+    """Live connectivity test against the active AI inference provider."""
+    provider = get_inference_provider()
     res = provider.health_check()
+    active = settings.active_provider
+
+    provider_label = "NVIDIA NIM" if active == "nvidia" else "Hugging Face Qwen"
 
     if res.get("connected"):
         return InferenceTestResponse(
             success=True,
-            message="Successfully reached Hugging Face Qwen router.",
+            message=f"Successfully connected to {provider_label} inference API.",
             latency_ms=res.get("latency_ms"),
             model_id=res.get("model"),
         )
     else:
         return InferenceTestResponse(
             success=False,
-            message="Failed to connect to Hugging Face Qwen router.",
+            message=f"Failed to connect to {provider_label} inference API.",
             error=res.get("error"),
             latency_ms=res.get("latency_ms"),
             model_id=res.get("model"),

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   LayoutDashboard,
   PlayCircle,
+  GitBranch,
   AlertTriangle,
   FileSearch,
   GitCommit,
@@ -9,7 +10,7 @@ import {
   Terminal,
 } from 'lucide-react';
 
-export type NavTab = 'overview' | 'launcher' | 'workspace' | 'incidents' | 'evidence' | 'repairs' | 'settings';
+export type NavTab = 'overview' | 'launcher' | 'repo_mode' | 'workspace' | 'incidents' | 'evidence' | 'repairs' | 'settings';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -20,7 +21,8 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, activeExperimentId }) => {
   const navItems = [
     { id: 'overview' as NavTab, label: 'Overview', icon: LayoutDashboard },
-    { id: 'launcher' as NavTab, label: 'New Experiment', icon: PlayCircle },
+    { id: 'repo_mode' as NavTab, label: 'Public GitHub Mode', icon: GitBranch, badge: 'NEW' },
+    { id: 'launcher' as NavTab, label: 'Demo Scenarios', icon: PlayCircle },
     {
       id: 'workspace' as NavTab,
       label: 'Live Workspace',

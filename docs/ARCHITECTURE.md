@@ -72,3 +72,18 @@ CHAOSPATCH is an autonomous AI reliability engineering workbench that:
    - `experiment_orchestrator.py`: Coordinates the 8-stage state machine and pushes real-time events.
 4. **`backend/app/providers/`**:
    - `huggingface_qwen.py`: OpenAI-compatible client connecting to `https://router.huggingface.co/v1` targeting model `Qwen/Qwen3-Coder-30B-A3B-Instruct:featherless-ai`.
+5. **`backend/app/adapters/` (Universal Language & Project Detection)**:
+   - `base.py`: Abstract `ProjectAdapter` defining inspection, dependency preparation, baseline and verification test command selection.
+   - `python_adapter.py`: Detects `pyproject.toml`, `requirements.txt`, `setup.py`, `Pipfile`, `tox.ini`, and selects standard pytest/unittest commands.
+   - `node_adapter.py`: Detects `package.json`, Jest, Vitest, and Mocha runners.
+   - `compiled_adapters.py`: Detects Go (`go.mod`), Rust (`Cargo.toml`), and Java (`pom.xml`, `build.gradle`).
+   - `detector.py`: Scans roots, detects monorepos, and routes to appropriate adapter or falls back safely to `UnsupportedAdapter` (`UNSUPPORTED_TEST_ENVIRONMENT`).
+6. **`backend/app/sandbox/docker_runner.py` (Container Isolation Engine)**:
+   - Executes untrusted repository tests only inside disposable Docker containers.
+   - Strict security bounds: `--network none` (network disabled during testing), `--memory 1g`, `--cpus 1.5`, `--pids-limit 64`, unprivileged non-root execution.
+   - Rejects Docker socket mounts, home-directory mounts, SSH keys, or credential leaks.
+7. **`backend/app/services/git_service.py` (Dynamic Repository & Branch Publishing Engine)**:
+   - Dynamic URL parser & validator (rejects credentials, invalid hosts, unsafe schemes, directory traversal).
+   - Safe cloning into configured `workspaces/repos/` root.
+   - Guarded branch publisher: publishes verified patches to dedicated branches (`chaospatch/repair-<exp-id>`). Strictly prohibits default branches (`main`/`master`), forbids force pushes (`--force`), and never opens automated pull requests or merges.
+

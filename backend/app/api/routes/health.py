@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.db.database import get_db
 from app.schemas import HealthResponse, ReadyResponse
-from app.providers.huggingface_qwen import HuggingFaceQwenProvider
+from app.providers import get_inference_provider
+from app.core.config import settings
 
 router = APIRouter(tags=["Health"])
 
@@ -19,8 +20,7 @@ def get_health(db: Session = Depends(get_db)):
     except Exception:
         db_status = "unhealthy"
 
-    provider = HuggingFaceQwenProvider()
-    inf_status = "configured" if provider.token else "not_configured"
+    inf_status = "configured" if settings.has_inference_credentials else "not_configured"
 
     return HealthResponse(
         status="healthy" if db_status == "healthy" else "degraded",
@@ -40,8 +40,7 @@ def get_readiness(db: Session = Depends(get_db)):
     except Exception:
         checks["database"] = False
 
-    provider = HuggingFaceQwenProvider()
-    checks["inference_configured"] = bool(provider.token)
+    checks["inference_configured"] = settings.has_inference_credentials
 
     all_ready = checks.get("database", False)
     return ReadyResponse(ready=all_ready, checks=checks)

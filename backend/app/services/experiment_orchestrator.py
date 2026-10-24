@@ -23,7 +23,7 @@ from app.services.fault_injector import get_fault_plugin
 from app.services.evidence_collector import EvidencePackage
 from app.services.patch_validator import PatchValidator
 from app.services.verification_engine import VerificationEngine
-from app.providers.huggingface_qwen import HuggingFaceQwenProvider
+from app.providers import get_inference_provider
 from app.providers.base import ModelDiagnosisResult
 
 logger = logging.getLogger("chaospatch.orchestrator")
@@ -243,8 +243,8 @@ class ExperimentOrchestrator:
             target_source_path = "demo_app/config.py" if exp.scenario_type == "missing_env_config" else "demo_app/client.py"
             source_content = workspace.read_file(target_source_path) or ""
 
-            # Attempt AI inference via Qwen
-            provider = HuggingFaceQwenProvider()
+            # Attempt AI inference via configured provider (NVIDIA NIM or HF)
+            provider = get_inference_provider()
             diagnosis_res: Optional[ModelDiagnosisResult] = None
             ai_error = None
 
@@ -255,7 +255,7 @@ class ExperimentOrchestrator:
                     evidence_text=evidence_text,
                     source_context=source_content,
                 )
-                await cls.broadcast_event(exp.id, "AI_DIAGNOSIS_SUCCESS", "Qwen 30B model returned structured diagnosis and proposed patch.", db=db)
+                await cls.broadcast_event(exp.id, "AI_DIAGNOSIS_SUCCESS", "AI model returned structured diagnosis and proposed patch.", db=db)
             except Exception as e:
                 ai_error = str(e)
                 logger.warning(f"Inference failed or unavailable: {ai_error}")

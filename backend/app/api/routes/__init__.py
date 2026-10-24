@@ -5,6 +5,7 @@ from app.api.routes.scenarios import router as scenarios_router
 from app.api.routes.experiments import router as experiments_router
 from app.api.routes.incidents import router as incidents_router
 from app.api.routes.settings import router as settings_router
+from app.api.routes.repository import router as repository_router
 
 __all__ = [
     "health_router",
@@ -13,4 +14,5 @@ __all__ = [
     "experiments_router",
     "incidents_router",
     "settings_router",
+    "repository_router",
 ]

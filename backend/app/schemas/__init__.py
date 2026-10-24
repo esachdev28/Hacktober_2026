@@ -145,6 +145,7 @@ class DashboardSummary(BaseModel):
 # === Settings Schemas ===
 
 class SettingsResponse(BaseModel):
+    model_config = {"protected_namespaces": ()}
     model_id: str
     provider: str
     inference_endpoint: str
@@ -159,6 +160,7 @@ class SettingsResponse(BaseModel):
 
 
 class InferenceTestResponse(BaseModel):
+    model_config = {"protected_namespaces": ()}
     success: bool
     message: str
     latency_ms: Optional[int] = None

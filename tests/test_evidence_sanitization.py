@@ -12,6 +12,15 @@ def test_sanitize_hf_token():
     assert "REDACTED" in sanitized
 
 
+def test_sanitize_nvapi_token():
+    """Verify NVIDIA API keys are redacted."""
+    raw = "Failed Authorization: Bearer nvapi-sample1234567890abcdef123456"
+    sanitized = sanitize_secrets(raw)
+    assert "nvapi-sample1234567890abcdef123456" not in sanitized
+    assert "REDACTED" in sanitized
+
+
+
 def test_sanitize_passwords_and_keys():
     """Verify passwords and API keys are redacted."""
     raw = 'Connecting with password="superSecretPassword123" and api_key="sk-live998877665544"'

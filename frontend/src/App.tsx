@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { Sidebar, NavTab } from './components/Sidebar';
 import { OverviewPage } from './pages/OverviewPage';
 import { LauncherPage } from './pages/LauncherPage';
+import { RepoIntakePage } from './pages/RepoIntakePage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { EvidencePage } from './pages/EvidencePage';
@@ -41,9 +42,13 @@ export const App: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             {activeTab === 'overview' && (
               <OverviewPage
-                onNavigateLauncher={() => setActiveTab('launcher')}
+                onNavigateLauncher={() => setActiveTab('repo_mode')}
                 onSelectExperiment={handleSelectExperiment}
               />
+            )}
+
+            {activeTab === 'repo_mode' && (
+              <RepoIntakePage onSelectExperiment={handleSelectExperiment} />
             )}
 
             {activeTab === 'launcher' && (
