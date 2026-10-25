@@ -1,6 +1,9 @@
 # CHAOSPATCH
 
 PPT LINK - https://drive.google.com/file/d/18pfnY0cQLda5LT9PmuLLsnBDcT4qRjzX/view?usp=sharing
+OPEN SOURCE AI MODEL USED - glm-5-3-flash
+
+
 
 
 > **Inject failure. Let AI recover.**  
