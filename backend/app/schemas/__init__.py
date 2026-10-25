@@ -187,6 +187,9 @@ class HealthResponse(BaseModel):
     version: str = "0.1.0"
     database: str = "unknown"
     inference: str = "unknown"
+    # Docker sandbox availability — False on Render free tier (no daemon)
+    docker_available: bool = False
+    docker_host: Optional[str] = None  # active DOCKER_HOST override, if any
 
 
 class ReadyResponse(BaseModel):

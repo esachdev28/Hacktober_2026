@@ -219,17 +219,17 @@ class RepositoryOrchestrator:
                             "message": msg,
                         }
                 except DockerUnavailableError as docker_err:
-                    msg = str(docker_err)
+                    docker_msg = str(docker_err)
                     return {
                         "experiment_id": experiment_id,
                         "baseline_status": "DOCKER_UNAVAILABLE",
                         "exit_code": 1,
                         "test_command": test_cmd,
                         "duration_ms": 0,
-                        "output_excerpt": msg,
+                        "output_excerpt": docker_msg,
                         "evidence_count": 0,
                         "failing_tests": [],
-                        "message": msg,
+                        "message": docker_msg,
                     }
 
             # 2. Execute isolated baseline tests (strictly air-gapped --network none)
@@ -242,17 +242,17 @@ class RepositoryOrchestrator:
                     timeout_seconds=60,
                 )
             except DockerUnavailableError as docker_err:
-                msg = str(docker_err)
+                docker_msg = str(docker_err)
                 return {
                     "experiment_id": experiment_id,
                     "baseline_status": "DOCKER_UNAVAILABLE",
                     "exit_code": 1,
                     "test_command": test_cmd,
                     "duration_ms": 0,
-                    "output_excerpt": msg,
+                    "output_excerpt": docker_msg,
                     "evidence_count": 0,
                     "failing_tests": [],
-                    "message": msg,
+                    "message": docker_msg,
                 }
 
             # Evaluate baseline result honestly
