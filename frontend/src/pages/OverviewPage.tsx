@@ -51,7 +51,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Hero Command Center Section with Subtle Kinetic Grid Background */}
-      <div className="relative rounded-2xl border border-canvas-border overflow-hidden bg-[#080B12] shadow-glow-card">
+      <div className="relative rounded-2xl border border-canvas-border overflow-hidden bg-[#111310] shadow-glow-card">
         <KineticGrid intensity="subtle" className="min-h-[200px] sm:min-h-[220px]">
           <div className="p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div className="max-w-2xl space-y-2">

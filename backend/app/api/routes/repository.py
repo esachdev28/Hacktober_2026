@@ -87,15 +87,15 @@ def diagnose_and_patch(experiment_id: int, db: Session = Depends(get_db)):
         return {
             "experiment_id": experiment_id,
             "repair_id": None,
-            "status": "AI_UNAVAILABLE",
-            "title": "AI inference not configured",
-            "root_cause": "No AI inference credentials are configured. Set NVIDIA_API_KEY or HF_TOKEN in .env.",
+            "status": "MODEL_UNAVAILABLE",
+            "title": "Model Unavailable: NVIDIA NIM Not Configured",
+            "root_cause": "NVIDIA_API_KEY is not configured in backend environment. Configure NVIDIA_API_KEY to enable AI inference.",
             "confidence": 0.0,
             "proposed_patch_diff": "",
-            "explanation": "",
+            "explanation": "No patch generated.",
             "risk_summary": "N/A",
             "is_ai_generated": False,
-            "provider": "none",
+            "provider": f"nvidia-nim:{settings.effective_nvidia_model}",
         }
 
     try:
@@ -104,26 +104,28 @@ def diagnose_and_patch(experiment_id: int, db: Session = Depends(get_db)):
             evidence_text=evidence_text or "Baseline test failure",
             source_context=f"Repository: {exp.repo_url} (Stack: {exp.detected_language})",
         )
-        # Reject placeholder / empty diffs
+        # Validate that model returned an executable unified diff
         diff = diagnosis.proposed_patch_diff or ""
-        if not diff.strip() or diff.strip().startswith("#") and len(diff.strip()) < 80:
+        if not diff.strip() or (diff.strip().startswith("#") and len(diff.strip()) < 80):
             raise RuntimeError(f"AI returned an empty or placeholder diff: '{diff[:80]}'")
     except Exception as err:
+        err_str = str(err)
+        status_code = "MODEL_TIMEOUT" if ("MODEL_TIMEOUT" in err_str or "timed out" in err_str.lower() or "timeout" in err_str.lower()) else ("MODEL_UNAVAILABLE" if "MODEL_UNAVAILABLE" in err_str else "MODEL_FAILED")
         return {
             "experiment_id": experiment_id,
             "repair_id": None,
-            "status": "REFERENCE_FALLBACK",
-            "title": f"Diagnostic for {exp.repo_name}",
-            "root_cause": f"AI inference failed: {str(err)}",
+            "status": status_code,
+            "title": f"Inference Failed for {exp.repo_name}",
+            "root_cause": err_str,
             "confidence": 0.0,
             "proposed_patch_diff": "",
-            "explanation": "Inference unavailable. Review baseline logs and apply a manual patch.",
-            "risk_summary": "Manual review required.",
+            "explanation": "Model inference failed. No candidate patch was generated.",
+            "risk_summary": "N/A",
             "is_ai_generated": False,
-            "provider": "reference-fallback",
+            "provider": f"nvidia-nim:{settings.effective_nvidia_model}",
         }
 
-    # Persist RepairAttempt
+    # Persist RepairAttempt only when genuine patch exists
     repair = RepairAttempt(
         experiment_id=exp.id,
         attempt_number=1,
@@ -139,6 +141,7 @@ def diagnose_and_patch(experiment_id: int, db: Session = Depends(get_db)):
     return {
         "experiment_id": experiment_id,
         "repair_id": repair.id,
+        "status": "PATCH_READY" if diagnosis.proposed_patch_diff.strip() else "DIAGNOSIS_READY",
         "title": diagnosis.title,
         "root_cause": diagnosis.root_cause,
         "confidence": diagnosis.confidence,

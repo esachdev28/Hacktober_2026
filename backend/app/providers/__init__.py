@@ -1,25 +1,16 @@
-# Providers module
+"""Inference provider module — Strict single-provider lockdown (NVIDIA NIM)."""
 from app.providers.base import BaseInferenceProvider, ModelDiagnosisResult
-from app.providers.huggingface_qwen import HuggingFaceQwenProvider
 from app.providers.nvidia_nim import NvidiaNIMProvider
 
 
 def get_inference_provider() -> BaseInferenceProvider:
-    """Factory: return the active inference provider based on configuration."""
-    from app.core.config import settings
-    provider = settings.active_provider
-    if provider == "nvidia":
-        return NvidiaNIMProvider()
-    if provider == "huggingface":
-        return HuggingFaceQwenProvider()
-    # Default to NVIDIA NIM as primary platform provider
+    """Factory: strictly return the sole configured provider (NvidiaNIMProvider)."""
     return NvidiaNIMProvider()
 
 
 __all__ = [
     "BaseInferenceProvider",
     "ModelDiagnosisResult",
-    "HuggingFaceQwenProvider",
     "NvidiaNIMProvider",
     "get_inference_provider",
 ]

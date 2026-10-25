@@ -20,7 +20,6 @@ export const FailureReveal: React.FC = () => {
     setPrefersReducedMotion(mediaQuery.matches);
 
     if (mediaQuery.matches) {
-      // In reduced motion, do not bind GSAP scroll pinning
       return;
     }
 
@@ -36,7 +35,7 @@ export const FailureReveal: React.FC = () => {
         },
       });
 
-      // Step 1: Amber fracture line ignites and sparks across the surface
+      // Step 1: Signal Coral fracture line sparks across the surface
       if (fracturePathRef.current) {
         const length = fracturePathRef.current.getTotalLength() || 1200;
         gsap.set(fracturePathRef.current, {
@@ -117,7 +116,7 @@ export const FailureReveal: React.FC = () => {
         );
       }
 
-      // Step 5: Final settlement message highlights verified recovery
+      // Step 5: Final settlement message highlights verified recovery in Acid Lime
       if (settleSummaryRef.current) {
         tl.fromTo(
           settleSummaryRef.current,
@@ -143,18 +142,18 @@ export const FailureReveal: React.FC = () => {
     <div
       id="failure-reveal"
       ref={containerRef}
-      className="relative w-full min-h-screen bg-[#06080F] text-white overflow-hidden flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 select-none"
+      className="relative w-full min-h-screen bg-[#111310] text-[#F3F0E7] overflow-hidden flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 select-none"
     >
       {/* Background Architectural Grid */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-25 pointer-events-none" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
       <div className="absolute inset-0 bg-radial-vignette pointer-events-none" />
 
-      {/* AMBER GLOW FILTERS FOR THE SVG FRACTURE */}
+      {/* SIGNAL CORAL GLOW FILTERS FOR THE SVG FRACTURE */}
       <svg className="absolute w-0 h-0" aria-hidden="true">
         <defs>
-          <filter id="fracture-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" result="blur1" />
-            <feGaussianBlur stdDeviation="12" result="blur2" />
+          <filter id="coral-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur1" />
+            <feGaussianBlur stdDeviation="10" result="blur2" />
             <feMerge>
               <feMergeNode in="blur2" />
               <feMergeNode in="blur1" />
@@ -174,116 +173,116 @@ export const FailureReveal: React.FC = () => {
         }`}
       >
         {/* Machinery Header Telemetry */}
-        <div className="w-full flex items-center justify-between pb-4 border-b border-[#253148]/80 mb-6 font-mono text-xs">
+        <div className="w-full flex items-center justify-between pb-4 border-b border-[#363B30] mb-6 font-mono text-xs">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-400 font-bold uppercase tracking-wider">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C7F36B] animate-pulse" />
+            <span className="text-[#C7F36B] font-bold uppercase tracking-wider">
               SANDBOX FORENSICS & RECOVERY PIPELINE
             </span>
-            <span className="text-text-muted">/</span>
-            <span className="text-text-secondary">EXP-311: ISOLATED RUN</span>
+            <span className="text-[#505745]">/</span>
+            <span className="text-[#B0B2A7]">EXP-311: ISOLATED RUN</span>
           </div>
 
-          <div className="hidden sm:flex items-center space-x-3 text-text-muted text-[11px]">
-            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <div className="hidden sm:flex items-center space-x-3 text-[#85897D] text-[11px]">
+            <span className="px-2 py-0.5 rounded bg-[#191C17] text-[#B0B2A7] border border-[#363B30]">
               AIR-GAPPED NET: NONE
             </span>
-            <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              GEMMA-4-31B-IT
+            <span className="px-2 py-0.5 rounded bg-[#202A16] text-[#C7F36B] border border-[#363B30]">
+              GLM-5.3-FLASH
             </span>
           </div>
         </div>
 
-        {/* Triple Node Architecture: Failure -> AI Diagnosis -> Verified Recovery */}
+        {/* Triple Node Architecture: Signal Coral Failure -> AI Diagnosis -> Acid Lime Recovery */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full">
-          {/* NODE 1: Captured Failure Evidence */}
-          <div className="rounded-xl bg-[#0D1220]/95 border border-red-500/40 p-5 shadow-xl relative overflow-hidden backdrop-blur-md">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500" />
+          {/* NODE 1: Injected Failure Evidence (Signal Coral #FF6B55) */}
+          <div className="rounded-xl bg-[#191C17] border border-[#FF6B55]/50 p-5 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-[#FF6B55]" />
             
             <div className="flex items-center justify-between mb-3 font-mono">
-              <div className="flex items-center space-x-2 text-xs text-red-400 font-bold">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
+              <div className="flex items-center space-x-2 text-xs text-[#FF6B55] font-bold">
+                <AlertTriangle className="w-4 h-4 text-[#FF6B55]" />
                 <span>1. INJECTED FAILURE</span>
               </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#321D19] text-[#FF6B55] border border-[#FF6B55]/30">
                 EXIT 1 · ERROR
               </span>
             </div>
 
-            <div className="text-xs text-text-muted mb-2 font-mono">Captured Raw Sandbox Evidence:</div>
+            <div className="text-xs text-[#85897D] mb-2 font-mono">Captured Raw Sandbox Evidence:</div>
             
             {/* Terminal Mock Snippet */}
-            <div className="bg-[#05070B] rounded-lg p-3 font-mono text-[11px] text-red-300 border border-red-500/20 mb-3 overflow-x-auto leading-relaxed">
-              <p className="text-text-muted text-[10px] mb-1"># py.test -q tests/test_auth.py</p>
+            <div className="bg-[#111310] rounded-lg p-3 font-mono text-[11px] text-[#FF6B55] border border-[#363B30] mb-3 overflow-x-auto leading-relaxed">
+              <p className="text-[#85897D] text-[10px] mb-1"># py.test -q tests/test_auth.py</p>
               <p className="font-semibold">FAILED tests/test_auth.py::test_jwt_sign</p>
-              <p className="text-red-400">KeyError: 'JWT_SECRET_KEY' missing from environment</p>
-              <p className="text-text-muted mt-1">&gt; raise TokenConfigException(f"key missing: &#123;key&#125;")</p>
+              <p className="text-[#FF6B55]">KeyError: 'JWT_SECRET_KEY' missing from environment</p>
+              <p className="text-[#85897D] mt-1">&gt; raise TokenConfigException(f"key missing: &#123;key&#125;")</p>
             </div>
 
-            <div className="text-[11px] font-mono text-text-secondary space-y-1">
-              <div><span className="text-text-muted">Evidence ID:</span> <span className="text-white font-mono">EVID-311-001</span></div>
-              <div><span className="text-text-muted">Sanitization:</span> <span className="text-emerald-400">Tokens Redacted</span></div>
+            <div className="text-[11px] font-mono text-[#B0B2A7] space-y-1">
+              <div><span className="text-[#85897D]">Evidence ID:</span> <span className="text-[#F3F0E7]">EVID-311-001</span></div>
+              <div><span className="text-[#85897D]">Sanitization:</span> <span className="text-[#C7F36B]">Tokens Redacted</span></div>
             </div>
           </div>
 
           {/* NODE 2: AI Investigator & Unified Diff Patch */}
-          <div className="rounded-xl bg-[#0D1220]/95 border border-purple-500/40 p-5 shadow-xl relative overflow-hidden backdrop-blur-md">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-amber-500" />
+          <div className="rounded-xl bg-[#191C17] border border-[#363B30] p-5 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-[#505745]" />
 
             <div className="flex items-center justify-between mb-3 font-mono">
-              <div className="flex items-center space-x-2 text-xs text-purple-300 font-bold">
-                <Cpu className="w-4 h-4 text-purple-400" />
+              <div className="flex items-center space-x-2 text-xs text-[#F3F0E7] font-bold">
+                <Cpu className="w-4 h-4 text-[#C7F36B]" />
                 <span>2. AI SYNTHESIZED REPAIR</span>
               </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#202A16] text-[#C7F36B] border border-[#363B30]">
                 NVIDIA NIM
               </span>
             </div>
 
-            <div className="text-xs text-text-muted mb-2 font-mono">Validated Unified Diff Patch:</div>
+            <div className="text-xs text-[#85897D] mb-2 font-mono">Validated Unified Diff Patch:</div>
 
             {/* Diff Card */}
-            <div className="bg-[#05070B] rounded-lg p-3 font-mono text-[11px] border border-purple-500/20 mb-3 overflow-x-auto leading-relaxed">
-              <p className="text-text-muted text-[10px]">--- a/demo_app/auth/token.py</p>
-              <p className="text-text-muted text-[10px]">+++ b/demo_app/auth/token.py</p>
-              <p className="text-cyan-400 text-[10px]">@@ -14,3 +14,5 @@</p>
-              <p className="text-red-400 bg-red-950/30 px-1 rounded-sm">- return os.environ["JWT_SECRET_KEY"]</p>
-              <p className="text-emerald-400 bg-emerald-950/30 px-1 rounded-sm">+ key = os.getenv("JWT_SECRET_KEY")</p>
-              <p className="text-emerald-400 bg-emerald-950/30 px-1 rounded-sm">+ return key if key else default_key()</p>
+            <div className="bg-[#111310] rounded-lg p-3 font-mono text-[11px] border border-[#363B30] mb-3 overflow-x-auto leading-relaxed">
+              <p className="text-[#85897D] text-[10px]">--- a/demo_app/auth/token.py</p>
+              <p className="text-[#85897D] text-[10px]">+++ b/demo_app/auth/token.py</p>
+              <p className="text-[#86B7FF] text-[10px]">@@ -14,3 +14,5 @@</p>
+              <p className="text-[#FF6B55] bg-[#321D19] px-1 rounded-sm">- return os.environ["JWT_SECRET_KEY"]</p>
+              <p className="text-[#C7F36B] bg-[#202A16] px-1 rounded-sm">+ key = os.getenv("JWT_SECRET_KEY")</p>
+              <p className="text-[#C7F36B] bg-[#202A16] px-1 rounded-sm">+ return key if key else default_key()</p>
             </div>
 
-            <div className="text-[11px] font-mono text-text-secondary space-y-1">
-              <div><span className="text-text-muted">Security Guard:</span> <span className="text-emerald-400">Path Bounds OK</span></div>
-              <div><span className="text-text-muted">Human Approval:</span> <span className="text-amber-400">Required Before Apply</span></div>
+            <div className="text-[11px] font-mono text-[#B0B2A7] space-y-1">
+              <div><span className="text-[#85897D]">Security Guard:</span> <span className="text-[#C7F36B]">Path Bounds OK</span></div>
+              <div><span className="text-[#85897D]">Human Approval:</span> <span className="text-[#FFC66D]">Required Before Apply</span></div>
             </div>
           </div>
 
-          {/* NODE 3: Deterministic Verified Recovery */}
-          <div className="rounded-xl bg-[#0D1220]/95 border border-emerald-500/40 p-5 shadow-xl relative overflow-hidden backdrop-blur-md">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-500" />
+          {/* NODE 3: Deterministic Verified Recovery (Acid Lime #C7F36B) */}
+          <div className="rounded-xl bg-[#191C17] border border-[#C7F36B]/50 p-5 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-[#C7F36B]" />
 
             <div className="flex items-center justify-between mb-3 font-mono">
-              <div className="flex items-center space-x-2 text-xs text-emerald-400 font-bold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center space-x-2 text-xs text-[#C7F36B] font-bold">
+                <CheckCircle2 className="w-4 h-4 text-[#C7F36B]" />
                 <span>3. VERIFIED RECOVERY</span>
               </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#202A16] text-[#C7F36B] border border-[#C7F36B]/30">
                 100% PASS
               </span>
             </div>
 
-            <div className="text-xs text-text-muted mb-2 font-mono">Deterministic Sandbox Rerun:</div>
+            <div className="text-xs text-[#85897D] mb-2 font-mono">Deterministic Sandbox Rerun:</div>
 
-            <div className="bg-[#05070B] rounded-lg p-3 font-mono text-[11px] text-emerald-400 border border-emerald-500/20 mb-3 overflow-x-auto leading-relaxed">
-              <p className="text-text-muted text-[10px] mb-1"># py.test -q (post-patch verification)</p>
-              <p className="font-semibold text-emerald-300">tests/test_auth.py . [100%]</p>
-              <p className="text-emerald-400">1 passed, 0 failed, 0 errors in 0.42s</p>
-              <p className="text-text-muted mt-1 font-semibold text-white">&gt; VERDICT: VERIFIED_RECOVERY</p>
+            <div className="bg-[#111310] rounded-lg p-3 font-mono text-[11px] text-[#C7F36B] border border-[#363B30] mb-3 overflow-x-auto leading-relaxed">
+              <p className="text-[#85897D] text-[10px] mb-1"># py.test -q (post-patch verification)</p>
+              <p className="font-semibold text-[#C7F36B]">tests/test_auth.py . [100%]</p>
+              <p className="text-[#C7F36B]">1 passed, 0 failed, 0 errors in 0.42s</p>
+              <p className="text-[#85897D] mt-1 font-semibold text-[#F3F0E7]">&gt; VERDICT: VERIFIED_RECOVERY</p>
             </div>
 
-            <div className="text-[11px] font-mono text-text-secondary space-y-1">
-              <div><span className="text-text-muted">Strict Policy:</span> <span className="text-white">Zero Fake Passes</span></div>
-              <div><span className="text-text-muted">Export:</span> <span className="text-cyan-400">Verified Branch Ready</span></div>
+            <div className="text-[11px] font-mono text-[#B0B2A7] space-y-1">
+              <div><span className="text-[#85897D]">Strict Policy:</span> <span className="text-[#F3F0E7]">Zero Fake Passes</span></div>
+              <div><span className="text-[#85897D]">Export:</span> <span className="text-[#86B7FF]">Verified Branch Ready</span></div>
             </div>
           </div>
         </div>
@@ -291,10 +290,10 @@ export const FailureReveal: React.FC = () => {
         {/* Settle Summary Banner */}
         <div
           ref={settleSummaryRef}
-          className="mt-8 text-center max-w-3xl mx-auto px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#111827] to-cyan-500/10 border border-[#253148] backdrop-blur-sm"
+          className="mt-8 text-center max-w-3xl mx-auto px-4 py-3 rounded-xl bg-[#191C17] border border-[#363B30]"
         >
-          <p className="text-xs sm:text-sm font-mono text-text-primary">
-            <span className="text-amber-400 font-bold">CHAOSPATCH GUARANTEE:</span> An inference response is never reported as a verified recovery until fresh deterministic sandbox checks succeed.
+          <p className="text-xs sm:text-sm font-mono text-[#F3F0E7]">
+            <span className="text-[#C7F36B] font-bold">CHAOSPATCH GUARANTEE:</span> An inference response is never reported as a verified recovery until fresh deterministic sandbox checks succeed.
           </p>
         </div>
       </div>
@@ -307,16 +306,16 @@ export const FailureReveal: React.FC = () => {
           {/* UPPER TEAR PLATE */}
           <div
             ref={upperPlateRef}
-            className="w-full h-1/2 bg-[#090D18] border-b-2 border-amber-500/80 relative flex items-end justify-center shadow-2xl"
+            className="w-full h-1/2 bg-[#191C17] border-b-2 border-[#FF6B55] relative flex items-end justify-center shadow-2xl"
             style={{
               clipPath:
                 'polygon(0% 0%, 100% 0%, 100% 90%, 85% 97%, 70% 88%, 55% 98%, 40% 90%, 25% 96%, 10% 89%, 0% 98%)',
             }}
           >
             {/* Upper Surface Plate Styling */}
-            <div className="absolute inset-0 bg-grid-pattern opacity-30" />
-            <div className="absolute top-8 left-8 flex items-center space-x-3 text-xs font-mono text-text-muted">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <div className="absolute inset-0 bg-grid-pattern opacity-40" />
+            <div className="absolute top-8 left-8 flex items-center space-x-3 text-xs font-mono text-[#85897D]">
+              <span className="w-2 h-2 rounded-full bg-[#FF6B55] animate-ping" />
               <span>CORE_SURFACE_MONITOR // SEAM_01</span>
             </div>
           </div>
@@ -324,20 +323,20 @@ export const FailureReveal: React.FC = () => {
           {/* LOWER TEAR PLATE */}
           <div
             ref={lowerPlateRef}
-            className="w-full h-1/2 bg-[#090D18] border-t-2 border-amber-500/80 relative flex items-start justify-center shadow-2xl"
+            className="w-full h-1/2 bg-[#191C17] border-t-2 border-[#FF6B55] relative flex items-start justify-center shadow-2xl"
             style={{
               clipPath:
                 'polygon(0% 2%, 10% 11%, 25% 4%, 40% 10%, 55% 2%, 70% 12%, 85% 3%, 100% 10%, 100% 100%, 0% 100%)',
             }}
           >
             {/* Lower Surface Plate Styling */}
-            <div className="absolute inset-0 bg-grid-pattern opacity-30" />
-            <div className="absolute bottom-8 right-8 flex items-center space-x-3 text-xs font-mono text-text-muted">
+            <div className="absolute inset-0 bg-grid-pattern opacity-40" />
+            <div className="absolute bottom-8 right-8 flex items-center space-x-3 text-xs font-mono text-[#85897D]">
               <span>SECURITY_BOUNDARY // DISPOSABLE_WORKSPACE</span>
             </div>
           </div>
 
-          {/* AMBER JAGGED FRACTURE SEAM (SVG PATH ACROSS THE MIDDLE) */}
+          {/* SIGNAL CORAL JAGGED FRACTURE SEAM (SVG PATH ACROSS THE MIDDLE) */}
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-24 flex items-center justify-center pointer-events-none">
             <svg
               className="w-full h-24 overflow-visible"
@@ -348,11 +347,11 @@ export const FailureReveal: React.FC = () => {
               <path
                 ref={fracturePathRef}
                 d="M 0,50 L 120,40 L 240,65 L 360,35 L 480,68 L 600,42 L 720,62 L 840,38 L 960,66 L 1080,45 L 1200,50"
-                stroke="#FF9F0A"
+                stroke="#FF6B55"
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                filter="url(#fracture-glow)"
+                filter="url(#coral-glow)"
               />
             </svg>
           </div>
@@ -362,13 +361,13 @@ export const FailureReveal: React.FC = () => {
             ref={overlayTitleRef}
             className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none px-4 text-center"
           >
-            <div className="px-3.5 py-1.5 rounded-full bg-[#111827]/90 border border-amber-500/40 text-[11px] font-mono text-amber-400 mb-4 shadow-xl">
+            <div className="px-3.5 py-1.5 rounded-full bg-[#111310] border border-[#363B30] text-[11px] font-mono text-[#FF6B55] mb-4">
               [ SYSTEM STATUS: CONTROLLED EQUILIBRIUM ]
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight text-white drop-shadow-2xl">
+            <h2 className="text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight text-[#F3F0E7] drop-shadow-2xl">
               THE SURFACE LOOKS CALM.
             </h2>
-            <p className="text-xs sm:text-sm font-mono text-text-secondary mt-2 tracking-wide max-w-md">
+            <p className="text-xs sm:text-sm font-mono text-[#B0B2A7] mt-2 tracking-wide max-w-md">
               Scroll down to induce fracture and reveal the autonomous recovery machinery underneath.
             </p>
           </div>

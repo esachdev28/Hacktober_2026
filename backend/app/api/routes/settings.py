@@ -19,15 +19,9 @@ def get_settings(db: Session = Depends(get_db)):
     except Exception:
         db_status = "offline"
 
-    active = settings.active_provider
-    if active == "nvidia":
-        model_id = settings.effective_nvidia_model
-        provider_name = "nvidia-nim"
-        endpoint = settings.nvidia_base_url
-    else:
-        model_id = settings.hf_model_id
-        provider_name = settings.hf_provider
-        endpoint = settings.hf_inference_endpoint
+    model_id = settings.effective_nvidia_model
+    provider_name = "nvidia-nim"
+    endpoint = settings.nvidia_base_url
 
     return SettingsResponse(
         model_id=model_id,
@@ -50,9 +44,7 @@ def test_inference_connectivity():
     """Live connectivity test against the active AI inference provider."""
     provider = get_inference_provider()
     res = provider.health_check()
-    active = settings.active_provider
-
-    provider_label = "NVIDIA NIM" if active == "nvidia" else "Hugging Face Qwen"
+    provider_label = "NVIDIA NIM (z-ai/glm-5.3-flash)"
 
     if res.get("connected"):
         return InferenceTestResponse(

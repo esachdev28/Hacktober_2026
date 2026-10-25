@@ -3,14 +3,13 @@ import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { motion, useMotionValue, useMotionTemplate, animate } from 'framer-motion';
 
-// Palette tailored to CHAOSPATCH:
-// Deep navy base, electric violet, deep blue, restrained cyan, and subtle amber
-const AURORA_COLORS = [
-  'rgba(124, 58, 237, 0.45)',  // Electric violet
-  'rgba(30, 64, 175, 0.50)',   // Deep royal blue
-  'rgba(6, 182, 212, 0.35)',   // Restrained cyan
-  'rgba(255, 159, 10, 0.30)',  // Subtle CHAOSPATCH amber
-  'rgba(99, 102, 241, 0.45)',  // Indigo
+// Palette tailored to Obsidian × Acid Lime × Signal Coral:
+// Restrained graphite, deep obsidian-olive, and quiet low-luminance ambient tones
+const AMBIENT_TONES = [
+  'rgba(34, 38, 31, 0.50)',   // Deep obsidian-graphite
+  'rgba(32, 42, 22, 0.35)',   // Faint deep olive (recovery undertone)
+  'rgba(50, 29, 25, 0.25)',   // Faint deep coral undertone
+  'rgba(25, 28, 23, 0.55)',   // Raw surface obsidian
 ];
 
 // Error Boundary to ensure WebGL failures never blank or crash React
@@ -25,7 +24,7 @@ class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: Rea
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.warn('WebGL Starfield canvas failed to render; falling back to aurora gradient:', error, errorInfo);
+    console.warn('WebGL Starfield canvas failed to render; falling back to ambient gradient:', error, errorInfo);
   }
 
   render() {
@@ -38,7 +37,7 @@ class WebGLErrorBoundary extends Component<{ children: ReactNode; fallback?: Rea
 
 export const AuroraStarfieldBackground: React.FC = () => {
   const [reducedMotion, setReducedMotion] = useState(false);
-  const color = useMotionValue(AURORA_COLORS[0]);
+  const color = useMotionValue(AMBIENT_TONES[0]);
 
   // Check prefers-reduced-motion
   useEffect(() => {
@@ -54,9 +53,9 @@ export const AuroraStarfieldBackground: React.FC = () => {
   useEffect(() => {
     if (reducedMotion) return;
 
-    const controls = animate(color, AURORA_COLORS, {
+    const controls = animate(color, AMBIENT_TONES, {
       ease: 'easeInOut',
-      duration: 16,
+      duration: 20,
       repeat: Infinity,
       repeatType: 'mirror',
     });
@@ -64,9 +63,8 @@ export const AuroraStarfieldBackground: React.FC = () => {
     return () => controls.stop();
   }, [color, reducedMotion]);
 
-  // Dynamic radial gradients using motion template
-  // Keeps the center dark (#080B12) while edges feature smooth shifting atmospheric aurora colors
-  const auroraGradient = useMotionTemplate`radial-gradient(135% 120% at 50% 0%, #080B12 55%, ${color} 100%)`;
+  // Dynamic radial gradients using motion template with obsidian foundation (#111310)
+  const ambientGradient = useMotionTemplate`radial-gradient(135% 120% at 50% 0%, #111310 65%, ${color} 100%)`;
 
   return (
     <div
@@ -74,23 +72,23 @@ export const AuroraStarfieldBackground: React.FC = () => {
       className="fixed inset-0 pointer-events-none select-none overflow-hidden z-0"
       style={{ isolation: 'isolate' }}
     >
-      {/* 1. Animated Atmospheric Aurora Gradient Layer */}
+      {/* 1. Restrained Atmospheric Gradient Layer */}
       <motion.div
         style={{
           backgroundImage: reducedMotion
-            ? 'radial-gradient(135% 120% at 50% 0%, #080B12 60%, rgba(124, 58, 237, 0.25) 100%)'
-            : auroraGradient,
+            ? 'radial-gradient(135% 120% at 50% 0%, #111310 70%, rgba(34, 38, 31, 0.4) 100%)'
+            : ambientGradient,
         }}
         className="absolute inset-0 w-full h-full"
       />
 
-      {/* 2. Secondary Floating Ambient Aurora Glows */}
-      <div className="absolute top-[-10%] left-[15%] w-[650px] h-[400px] bg-gradient-to-tr from-indigo-600/10 via-purple-600/15 to-amber-500/10 blur-[130px] rounded-full opacity-60" />
-      <div className="absolute bottom-[-15%] right-[10%] w-[550px] h-[350px] bg-gradient-to-br from-cyan-600/10 via-blue-700/15 to-purple-600/10 blur-[140px] rounded-full opacity-50" />
+      {/* 2. Secondary Faint Ambient Glows (Quiet Industrial Tones) */}
+      <div className="absolute top-[-10%] left-[20%] w-[650px] h-[350px] bg-gradient-to-tr from-[#202A16]/20 via-[#22261F]/30 to-transparent blur-[140px] rounded-full opacity-50" />
+      <div className="absolute bottom-[-15%] right-[15%] w-[550px] h-[350px] bg-gradient-to-br from-[#321D19]/15 via-[#191C17]/40 to-transparent blur-[150px] rounded-full opacity-40" />
 
       {/* 3. Interactive 3D Cosmic Starfield via React Three Fiber */}
       {!reducedMotion && (
-        <div className="absolute inset-0 w-full h-full opacity-70">
+        <div className="absolute inset-0 w-full h-full opacity-45">
           <WebGLErrorBoundary>
             <Canvas
               gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
@@ -100,11 +98,11 @@ export const AuroraStarfieldBackground: React.FC = () => {
               <Stars
                 radius={60}
                 depth={45}
-                count={2200}
-                factor={3.5}
+                count={1600}
+                factor={2.8}
                 saturation={0}
                 fade
-                speed={0.8}
+                speed={0.5}
               />
             </Canvas>
           </WebGLErrorBoundary>
@@ -112,7 +110,7 @@ export const AuroraStarfieldBackground: React.FC = () => {
       )}
 
       {/* 4. Subtle Vignette & Engineering Grid overlay */}
-      <div className="absolute inset-0 bg-radial-vignette opacity-40" />
+      <div className="absolute inset-0 bg-radial-vignette opacity-50" />
     </div>
   );
 };

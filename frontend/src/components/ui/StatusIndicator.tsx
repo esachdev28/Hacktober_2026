@@ -67,11 +67,11 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
     norm === 'TIMED_OUT' ||
     norm === 'CANCELLED'
   ) {
-    colorClasses = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-    dotColor = 'bg-amber-400';
+    colorClasses = 'bg-[#302718] text-[#FFC66D] border-[#FFC66D]/30';
+    dotColor = 'bg-[#FFC66D]';
   } else if (norm === 'CHECKING' || norm === 'CREATED') {
-    colorClasses = 'bg-accent-info/10 text-accent-info border-accent-info/30';
-    dotColor = 'bg-accent-info';
+    colorClasses = 'bg-[#1D2735] text-[#86B7FF] border-[#86B7FF]/30';
+    dotColor = 'bg-[#86B7FF]';
   }
 
   const displayText = label || safeStatus;

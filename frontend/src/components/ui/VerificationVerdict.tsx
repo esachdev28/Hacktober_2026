@@ -21,42 +21,42 @@ export const VerificationVerdict: React.FC<VerificationVerdictProps> = ({ result
 
   const config = {
     VERIFIED: {
-      border: 'border-accent-success/40 bg-accent-success/5',
+      border: 'border-[#C7F36B]/40 bg-[#202A16]',
       icon: CheckCircle2,
-      iconColor: 'text-accent-success',
-      badge: 'bg-accent-success/20 text-accent-success border-accent-success/30',
+      iconColor: 'text-[#C7F36B]',
+      badge: 'bg-[#202A16] text-[#C7F36B] border-[#C7F36B]/30',
       headline: 'RECOVERY VERIFIED INDEPENDENTLY',
       subline: 'The proposed patch successfully resolved the target failure in the isolated test harness with zero regressions.',
     },
     FAILED: {
-      border: 'border-accent-failure/40 bg-accent-failure/5',
+      border: 'border-[#FF6B55]/40 bg-[#321D19]',
       icon: XCircle,
-      iconColor: 'text-accent-failure',
-      badge: 'bg-accent-failure/20 text-accent-failure border-accent-failure/30',
+      iconColor: 'text-[#FF6B55]',
+      badge: 'bg-[#321D19] text-[#FF6B55] border-[#FF6B55]/30',
       headline: 'VERIFICATION CHECKS FAILED',
       subline: 'The applied patch executed, but tests still failed or regressions were detected in the sandbox workspace.',
     },
     REJECTED: {
-      border: 'border-rose-400/40 bg-rose-500/5',
+      border: 'border-[#FF6B55]/40 bg-[#321D19]',
       icon: AlertTriangle,
-      iconColor: 'text-rose-400',
-      badge: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+      iconColor: 'text-[#FF6B55]',
+      badge: 'bg-[#321D19] text-[#FF6B55] border-[#FF6B55]/30',
       headline: 'PATCH REJECTED BY SAFETY VALIDATOR',
       subline: 'The candidate patch was rejected (invalid unified diff, missing headers, or unauthorized modifications).',
     },
     INCONCLUSIVE: {
-      border: 'border-amber-500/40 bg-amber-500/5',
+      border: 'border-[#FFC66D]/40 bg-[#302718]',
       icon: HelpCircle,
-      iconColor: 'text-amber-400',
-      badge: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+      iconColor: 'text-[#FFC66D]',
+      badge: 'bg-[#302718] text-[#FFC66D] border-[#FFC66D]/30',
       headline: 'VERIFICATION INCONCLUSIVE',
       subline: 'Post-patch verification could not complete conclusively (Docker sandbox unavailable, test timeout, or harness execution error).',
     },
   }[status] || {
-    border: 'border-canvas-border bg-canvas-card',
+    border: 'border-border bg-surface',
     icon: HelpCircle,
-    iconColor: 'text-text-muted',
-    badge: 'bg-canvas-surface text-text-muted border-canvas-border',
+    iconColor: 'text-foreground-muted',
+    badge: 'bg-surface text-foreground-muted border-border',
     headline: `STATUS: ${status}`,
     subline: result.summary || 'Verification run concluded.',
   };
@@ -150,12 +150,12 @@ export const VerificationVerdict: React.FC<VerificationVerdictProps> = ({ result
 
       {/* Summary Narrative or Diff Hash */}
       {(result.summary || result.diff_hash) && (
-        <div className="p-3 rounded-lg bg-[#070A10] border border-canvas-border text-[11px] text-text-secondary flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="p-3 rounded-lg bg-[#111310] border border-[#363B30] text-[11px] text-[#B0B2A7] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           {result.summary && <span>{result.summary}</span>}
           {result.diff_hash && (
-            <span className="text-text-muted shrink-0 flex items-center space-x-1">
-              <Hash className="w-3 h-3 text-accent-chaos" />
-              <span>SHA-256: <code className="text-accent-chaos">{result.diff_hash.substring(0, 12)}</code></span>
+            <span className="text-[#85897D] shrink-0 flex items-center space-x-1">
+              <Hash className="w-3 h-3 text-[#C7F36B]" />
+              <span>SHA-256: <code className="text-[#C7F36B]">{result.diff_hash.substring(0, 12)}</code></span>
             </span>
           )}
         </div>

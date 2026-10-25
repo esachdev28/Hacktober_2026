@@ -47,7 +47,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, mobileNavOpen
     return () => clearInterval(interval);
   }, []);
 
-  // Format real provider and model label truthfully
   const getProviderModelDisplay = () => {
     if (!settings) {
       return inferenceStatus === 'ready' ? 'INFERENCE READY' : 'OFFLINE';
@@ -59,13 +58,13 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, mobileNavOpen
   };
 
   return (
-    <header className="h-14 border-b border-[#253148]/80 bg-[#0D1220]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0 font-mono transition-all">
+    <header className="h-14 border-b border-[#363B30] bg-[#191C17]/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0 font-mono transition-colors">
       {/* Brand & Wordmark */}
       <div className="flex items-center space-x-3.5">
         {onToggleMobileNav && (
           <button
             onClick={onToggleMobileNav}
-            className="md:hidden p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-[#1A243B] transition btn-magnetic"
+            className="md:hidden p-1.5 rounded-lg text-[#B0B2A7] hover:text-[#F3F0E7] hover:bg-[#22261F] transition btn-magnetic"
             aria-label="Toggle navigation menu"
           >
             {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -73,22 +72,22 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, mobileNavOpen
         )}
 
         <div className="flex items-center space-x-2.5 group cursor-default">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-orange-700 flex items-center justify-center shadow-[0_0_15px_rgba(255,159,10,0.25)] border border-amber-400/30 group-hover:shadow-[0_0_20px_rgba(255,159,10,0.4)] transition-all duration-200">
-            <Shield className="w-4 h-4 text-white drop-shadow" />
+          <div className="w-8 h-8 rounded-lg bg-[#22261F] flex items-center justify-center border border-[#505745] transition-colors">
+            <Shield className="w-4 h-4 text-[#C7F36B]" />
           </div>
           <div className="flex flex-col">
-            <span className="font-mono font-extrabold text-sm sm:text-base tracking-wider text-text-primary leading-none">
-              CHAOS<span className="text-accent-chaos">PATCH</span>
+            <span className="font-mono font-extrabold text-sm sm:text-base tracking-wider text-[#F3F0E7] leading-none">
+              CHAOS<span className="text-[#C7F36B]">PATCH</span>
             </span>
-            <span className="text-[9px] font-mono tracking-widest text-text-muted/80 mt-0.5">
+            <span className="text-[9px] font-mono tracking-widest text-[#85897D] mt-0.5">
               SRE COMMAND CENTER
             </span>
           </div>
         </div>
 
-        <div className="h-4 w-px bg-[#253148] hidden lg:block" />
-        <div className="items-center space-x-1.5 hidden lg:flex text-[11px] font-mono text-text-muted">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent-chaos/60 animate-ping" />
+        <div className="h-4 w-px bg-[#363B30] hidden lg:block" />
+        <div className="items-center space-x-1.5 hidden lg:flex text-[11px] font-mono text-[#85897D]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C7F36B]" />
           <span>Inject failure. Let AI recover.</span>
         </div>
       </div>
@@ -97,40 +96,37 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, mobileNavOpen
       <div className="flex items-center space-x-2 sm:space-x-3 text-xs">
         {/* Sandbox Isolation Status */}
         <div 
-          className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[11px] font-semibold tracking-wide shadow-sm"
+          className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#202A16] border border-[#363B30] text-[#C7F36B] text-[11px] font-semibold tracking-wide"
           title="Air-gapped Docker container isolation (--network none)"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-          </span>
+          <span className="w-2 h-2 rounded-full bg-[#C7F36B] animate-pulse" />
           <span>SANDBOX ISOLATED</span>
         </div>
 
         {/* Database Status */}
         <div 
-          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#131B2E]/90 border border-[#253148] text-[11px] shadow-sm"
+          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#22261F] border border-[#363B30] text-[11px]"
           title={`Database Connection: ${dbStatus}`}
         >
-          <Database className="w-3.5 h-3.5 text-text-muted shrink-0" />
-          <span className="text-text-muted hidden md:inline">DB:</span>
+          <Database className="w-3.5 h-3.5 text-[#85897D] shrink-0" />
+          <span className="text-[#85897D] hidden md:inline">DB:</span>
           <div className="flex items-center space-x-1">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
                 dbStatus === 'healthy'
-                  ? 'bg-accent-success'
+                  ? 'bg-[#C7F36B]'
                   : dbStatus === 'checking'
-                  ? 'bg-accent-info animate-pulse'
-                  : 'bg-accent-failure'
+                  ? 'bg-[#86B7FF] animate-pulse'
+                  : 'bg-[#FF6B55]'
               }`}
             />
             <span
               className={
                 dbStatus === 'healthy'
-                  ? 'text-accent-success font-bold'
+                  ? 'text-[#C7F36B] font-bold'
                   : dbStatus === 'checking'
-                  ? 'text-accent-info font-bold'
-                  : 'text-accent-failure font-bold'
+                  ? 'text-[#86B7FF] font-bold'
+                  : 'text-[#FF6B55] font-bold'
               }
             >
               {dbStatus.toUpperCase()}
@@ -140,13 +136,13 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, mobileNavOpen
 
         {/* AI Provider Status */}
         <div 
-          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#131B2E]/90 border border-[#253148] text-[11px] max-w-[210px] shadow-sm"
+          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#22261F] border border-[#363B30] text-[11px] max-w-[210px]"
           title={`Active Model: ${settings?.model_id || 'Not configured'}`}
         >
-          <Cpu className="w-3.5 h-3.5 text-accent-purple shrink-0" />
+          <Cpu className="w-3.5 h-3.5 text-[#C7F36B] shrink-0" />
           <span
             className={`truncate font-semibold tracking-tight ${
-              inferenceStatus === 'ready' ? 'text-accent-purple' : 'text-amber-400'
+              inferenceStatus === 'ready' ? 'text-[#C7F36B]' : 'text-[#FFC66D]'
             }`}
           >
             {getProviderModelDisplay()}
@@ -158,9 +154,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileNav, mobileNavOpen
           onClick={fetchRuntimeStatus}
           disabled={isRefreshing}
           title="Refresh runtime health telemetry"
-          className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-[#1A243B] border border-[#253148] hover:border-accent-chaos/40 transition btn-magnetic cursor-pointer active:scale-95"
+          className="p-1.5 rounded-md text-[#B0B2A7] hover:text-[#F3F0E7] hover:bg-[#22261F] border border-[#363B30] hover:border-[#505745] transition btn-magnetic cursor-pointer active:scale-95"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-accent-chaos' : 'hover:text-accent-chaos transition-colors'}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#C7F36B]' : 'hover:text-[#C7F36B] transition-colors'}`} />
         </button>
       </div>
     </header>

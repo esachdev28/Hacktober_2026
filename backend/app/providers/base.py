@@ -14,7 +14,7 @@ class ModelDiagnosisResult(BaseModel):
     explanation: str
     risk_summary: str
     is_ai_generated: bool = True
-    provider: str = "qwen-huggingface"
+    provider: str = "nvidia-nim:z-ai/glm-5.3-flash"
     raw_response: Optional[str] = None
 
 

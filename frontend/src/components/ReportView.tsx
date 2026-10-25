@@ -74,7 +74,7 @@ export const ReportView: React.FC<ReportViewProps> = ({ report }) => {
 
             <button
               onClick={handleDownloadJSON}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-accent-chaos text-canvas font-mono text-xs font-bold hover:bg-amber-400 transition"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-[#C7F36B] hover:bg-[#D8FF8A] active:bg-[#A9D94E] text-[#171A12] font-mono text-xs font-bold transition"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download JSON</span>

@@ -36,7 +36,7 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
   const isSuccess = exitCode === 0;
 
   return (
-    <div className={`rounded-xl border border-canvas-border bg-[#080C14] overflow-hidden flex flex-col font-mono text-xs ${className}`}>
+    <div className={`rounded-xl border border-canvas-border bg-[#191C17] overflow-hidden flex flex-col font-mono text-xs ${className}`}>
       {/* Top Header Bar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-canvas-surface/80 border-b border-canvas-border">
         <div className="flex items-center space-x-2.5 truncate">
@@ -106,7 +106,7 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
 
       {/* Optional Command Invocation Bar */}
       {command && (
-        <div className="px-4 py-1.5 bg-[#0A0F1A] border-b border-canvas-border/40 text-[11px] text-text-muted flex items-center space-x-2">
+        <div className="px-4 py-1.5 bg-[#141712] border-b border-canvas-border/40 text-[11px] text-text-muted flex items-center space-x-2">
           <span className="text-accent-chaos font-bold">$</span>
           <span className="text-text-secondary select-all">{command}</span>
         </div>
@@ -114,7 +114,7 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
 
       {/* Content Area */}
       <div
-        className={`p-4 bg-[#05070B] overflow-x-auto ${maxHeight} text-text-secondary select-text ${
+        className={`p-4 bg-[#111310] overflow-x-auto ${maxHeight} text-text-secondary select-text ${
           wrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'
         }`}
       >

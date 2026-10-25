@@ -74,10 +74,9 @@ flowchart TD
         B4[SQLite Database / SQLAlchemy]
     end
 
-    subgraph Inference ["AI Inference Providers"]
-        C1[NVIDIA NIM Provider\nGoogle Gemma / MiniMax]
-        C2[HuggingFace Router\nQwen-32B Coder]
-        C3[Deterministic Reference Fallback]
+    subgraph Inference ["AI Inference Provider (Strict Single-Model Lockdown)"]
+        C1[NVIDIA NIM Provider\nz-ai/glm-5.3-flash]
+        C2[Explicit Error Classification\nMODEL_FAILED / MODEL_TIMEOUT / MODEL_UNAVAILABLE]
     end
 
     subgraph Security ["Security & Isolation Layer"]
@@ -155,7 +154,7 @@ sequenceDiagram
     participant Git as GitService
     participant Detect as ProjectDetector
     participant Docker as Docker Sandbox
-    participant AI as NVIDIA NIM (Gemma)
+    participant AI as NVIDIA NIM (GLM-5.3-Flash)
     participant Validator as PatchValidator
 
     Operator->>API: POST /api/repository/intake {repo_url}
@@ -253,10 +252,9 @@ In Controlled Mode, CHAOSPATCH spins up an isolated instance of the bundled `dem
    - Gathers captured logs, stack traces, and test output excerpts.
    - Secrets and sensitive tokens are masked using `sanitize_secrets`.
 2. **Provider Selection**:
-   - [get_inference_provider()](file:///Users/ektasachdev/CHAOSPATCH_Hacktoberfest/backend/app/providers/__init__.py) loads the configured provider:
-     - **NVIDIA NIM (`NvidiaNimProvider`)**: High-performance endpoint using Google Gemma (`google/gemma-4-31b-it` or `google/diffusiongemma-26b-a4b-it`).
-     - **Hugging Face (`HuggingFaceQwenProvider`)**: OpenAI-compatible router targeting `Qwen/Qwen3-Coder-30B-A3B-Instruct`.
-     - **Reference Fallback**: Deterministic offline patches used if AI credentials are not supplied or upstream services fail.
+   - [get_inference_provider()](file:///Users/ektasachdev/CHAOSPATCH_Hacktoberfest/backend/app/providers/__init__.py) loads the sole configured provider:
+     - **NVIDIA NIM (`NvidiaNimProvider`)**: High-performance endpoint locked to `z-ai/glm-5.3-flash` at `https://integrate.api.nvidia.com/v1`.
+     - **Strict Single-Model Policy**: No silent fallback, no secondary provider chaining, and no synthetic reference patches. On inference failure or timeout, the system reports explicit error codes (`MODEL_FAILED`, `MODEL_TIMEOUT`, `MODEL_UNAVAILABLE`) with empty diffs.
 3. **Structured Prompt Construction**:
    - Formulates prompts optimized for instruction-tuned models without role confusion.
    - Requests a strict JSON schema containing:
@@ -567,9 +565,7 @@ CHAOSPATCH_Hacktoberfest/
 │   │   │   └── detector.py             # Scanner & monorepo project router
 │   │   ├── providers/                  # AI Inference integrations
 │   │   │   ├── base.py                 # Abstract InferenceProvider
-│   │   │   ├── nvidia_nim.py           # NVIDIA NIM (Google Gemma) provider
-│   │   │   ├── huggingface_qwen.py     # Hugging Face Qwen-32B router
-│   │   │   └── reference_fallback.py   # Deterministic fallback patches
+│   │   │   └── nvidia_nim.py           # NVIDIA NIM (z-ai/glm-5.3-flash) provider
 │   │   ├── sandbox/                    # Isolation boundaries
 │   │   │   ├── docker_runner.py        # Disposable container runner (--network none)
 │   │   │   ├── workspace.py            # Temporary worktree manager

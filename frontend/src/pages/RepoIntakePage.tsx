@@ -213,7 +213,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
           </div>
 
           {inspectionResult && (
-            <div className="p-3 rounded-xl bg-[#080B12] border border-canvas-border shrink-0 text-right">
+            <div className="p-3 rounded-xl bg-[#111310] border border-canvas-border shrink-0 text-right">
               <div className="text-[10px] text-text-muted uppercase">ACTIVE EXPERIMENT</div>
               <div className="text-sm font-bold text-accent-chaos">#EXP-{inspectionResult.experiment_id}</div>
               <div className="text-[10px] text-text-muted truncate max-w-[140px]">
@@ -550,7 +550,7 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
         <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-canvas-border pb-3">
             <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-accent-purple/20 border border-accent-purple/40 text-accent-purple text-xs font-bold flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-bold flex items-center justify-center">
                 4
               </span>
               <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
@@ -558,29 +558,45 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
               </h2>
             </div>
 
-            {diagnosisResult && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent-purple/15 text-accent-purple border border-accent-purple/30">
-                {diagnosisResult.is_ai_generated ? 'LIVE INFERENCE' : 'FALLBACK REFERENCE'}
+            {isDiagnosing ? (
+              <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-info-surface text-info border border-info/30 flex items-center space-x-1">
+                <Loader2 className="w-2.5 h-2.5 animate-spin mr-1" />
+                MODEL RUNNING
               </span>
-            )}
+            ) : (diagnosisError || diagnosisResult?.status === 'MODEL_FAILED' || diagnosisResult?.status === 'MODEL_TIMEOUT' || diagnosisResult?.status === 'MODEL_UNAVAILABLE') ? (
+              <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-danger-surface text-danger border border-danger/30">
+                MODEL FAILED
+              </span>
+            ) : diagnosisResult?.proposed_patch_diff?.trim() ? (
+              <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-[#202A16] text-primary border border-primary/30">
+                PATCH READY
+              </span>
+            ) : diagnosisResult ? (
+              <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-[#202A16] text-primary border border-primary/30">
+                DIAGNOSIS READY
+              </span>
+            ) : null}
           </div>
 
           {isDiagnosing ? (
-            <div className="p-8 rounded-xl bg-[#070A10] border border-canvas-border text-center space-y-3">
-              <Loader2 className="w-6 h-6 text-accent-purple animate-spin mx-auto" />
+            <div className="p-8 rounded-xl bg-surface border border-canvas-border text-center space-y-3">
+              <Loader2 className="w-6 h-6 text-primary animate-spin mx-auto" />
               <div className="text-xs text-text-secondary">
-                Querying configured neural engine, analyzing captured stack traces, and formatting candidate unified diff...
+                Querying GLM-5.3-Flash via NVIDIA NIM, analyzing captured stack traces, and formatting candidate unified diff...
               </div>
             </div>
           ) : diagnosisError ? (
-            <div className="p-4 rounded-xl bg-accent-failure/10 border border-accent-failure/30 text-accent-failure text-xs">
-              <div className="font-bold">Inference Error:</div>
+            <div className="p-4 rounded-xl bg-danger-surface border border-danger/30 text-danger text-xs space-y-1">
+              <div className="font-bold flex items-center space-x-1.5">
+                <AlertTriangle className="w-4 h-4 text-danger" />
+                <span>Inference Failure:</span>
+              </div>
               <div>{diagnosisError}</div>
             </div>
           ) : diagnosisResult ? (
             <div className="space-y-4">
               {/* Hypothesis & Confidence Banner */}
-              <div className="p-4 rounded-xl bg-[#070A10] border border-canvas-border space-y-2">
+              <div className="p-4 rounded-xl bg-surface border border-canvas-border space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-bold text-text-primary text-xs sm:text-sm">
                     {diagnosisResult.title}
@@ -614,9 +630,9 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
               />
 
               {/* SECTION 5 — Patch Authorization */}
-              <div className="rounded-xl border border-accent-chaos/40 bg-accent-chaos/5 p-4 sm:p-5 space-y-3">
-                <div className="flex items-center space-x-2 text-xs font-bold text-accent-chaos uppercase tracking-wider">
-                  <Lock className="w-4 h-4" />
+              <div className="rounded-xl border border-canvas-border bg-surface-elevated/40 p-4 sm:p-5 space-y-3">
+                <div className="flex items-center space-x-2 text-xs font-bold text-text-primary uppercase tracking-wider">
+                  <Lock className="w-4 h-4 text-accent-chaos" />
                   <span>5. Operator Safety Authorization</span>
                 </div>
 
@@ -632,36 +648,46 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
                     id="authCheck"
                     checked={patchAuthorized}
                     onChange={(e) => setPatchAuthorized(e.target.checked)}
-                    className="mt-0.5 rounded border-canvas-border bg-[#070A10] text-accent-chaos focus:ring-0 cursor-pointer"
+                    disabled={!diagnosisResult.proposed_patch_diff?.trim()}
+                    className="mt-0.5 rounded border-canvas-border bg-surface text-primary focus:ring-0 cursor-pointer disabled:cursor-not-allowed"
                   />
-                  <label htmlFor="authCheck" className="text-xs text-text-primary select-none cursor-pointer">
+                  <label htmlFor="authCheck" className={`text-xs select-none ${!diagnosisResult.proposed_patch_diff?.trim() ? 'text-text-muted cursor-not-allowed' : 'text-text-primary cursor-pointer'}`}>
                     <span className="font-bold">Authorize Sandbox Patch Application & Verification</span>
                     <span className="block text-[11px] text-text-muted mt-0.5">
-                      Grant permission to apply this diff to the isolated container and execute independent verification checks.
+                      {diagnosisResult.proposed_patch_diff?.trim()
+                        ? 'Grant permission to apply this diff to the isolated container and execute independent verification checks.'
+                        : 'Cannot authorize: No executable patch diff available from model inference.'}
                     </span>
                   </label>
                 </div>
 
                 {/* Verification Trigger Button */}
                 {!verifyResult && (
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={handleVerifyPatch}
-                      disabled={!patchAuthorized || isVerifying}
-                      className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-accent-success hover:bg-emerald-400 disabled:opacity-40 text-canvas font-bold text-xs transition-all cursor-pointer shadow-glow-emerald hover:shadow-[0_0_22px_rgba(52,211,153,0.45)] btn-magnetic active:scale-[0.98]"
-                    >
-                      {isVerifying ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Executing Independent Sandbox Tests...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Apply Patch & Verify Recovery</span>
-                        </>
-                      )}
-                    </button>
+                  <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {!diagnosisResult.proposed_patch_diff?.trim() && (
+                      <span className="text-[11px] text-danger font-medium">
+                        ⚠ Verification requires an executable patch diff.
+                      </span>
+                    )}
+                    <div className="sm:ml-auto">
+                      <button
+                        onClick={handleVerifyPatch}
+                        disabled={!patchAuthorized || isVerifying || !diagnosisResult.proposed_patch_diff?.trim()}
+                        className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-[#D8FF8A] disabled:opacity-30 disabled:cursor-not-allowed text-[#171A12] font-bold text-xs transition-all cursor-pointer shadow-[0_0_20px_rgba(199,243,107,0.25)] active:scale-[0.98]"
+                      >
+                        {isVerifying ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Executing Independent Sandbox Tests...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Apply Patch & Verify Recovery</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -675,13 +701,29 @@ export const RepoIntakePage: React.FC<RepoIntakePageProps> = ({ onSelectExperime
         <section className="rounded-xl border border-canvas-border bg-canvas-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-canvas-border pb-3">
             <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-accent-success/20 border border-accent-success/40 text-accent-success text-xs font-bold flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-bold flex items-center justify-center">
                 6
               </span>
               <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">
                 Independent Verification Verdict
               </h2>
             </div>
+
+            {verifyResult && (
+              <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded border ${
+                verifyResult.verification_status === 'VERIFIED'
+                  ? 'bg-[#202A16] text-primary border-primary/30'
+                  : verifyResult.verification_status === 'INCONCLUSIVE'
+                  ? 'bg-warning-surface text-warning border-warning/30'
+                  : 'bg-danger-surface text-danger border-danger/30'
+              }`}>
+                {verifyResult.verification_status === 'VERIFIED'
+                  ? 'VERIFICATION PASSED'
+                  : verifyResult.verification_status === 'INCONCLUSIVE'
+                  ? 'VERIFICATION INCONCLUSIVE'
+                  : 'VERIFICATION FAILED'}
+              </span>
+            )}
           </div>
 
           {isVerifying ? (

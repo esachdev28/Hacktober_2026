@@ -207,6 +207,7 @@ export interface RepoBaselineResponse {
 export interface RepoDiagnosisPatchResponse {
   experiment_id: number;
   repair_id: number;
+  status?: string;
   title: string;
   root_cause: string;
   confidence: number;

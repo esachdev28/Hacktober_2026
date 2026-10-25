@@ -395,13 +395,13 @@ class TestProviderSuccess:
             "diff must look like a unified diff"
 
 
-    def test_diagnosis_returns_reference_fallback_on_auth_failure(self, tmp_path):
+    def test_diagnosis_returns_model_error_on_auth_failure(self, tmp_path):
         exp_id = _intake("https://github.com/test-org/fallback-repo", tmp_path)
 
         with patch("app.api.routes.repository.get_inference_provider") as mock_factory:
             mock_provider = MagicMock()
             mock_provider.generate_diagnosis_and_patch.side_effect = RuntimeError(
-                "AI Inference failed (NVIDIA NIM): 401 Unauthorized"
+                "MODEL_UNAVAILABLE: NVIDIA NIM authentication failed"
             )
             mock_factory.return_value = mock_provider
 
@@ -409,10 +409,10 @@ class TestProviderSuccess:
 
         assert res.status_code == 200, res.text
         data = res.json()
-        assert data["status"] == "REFERENCE_FALLBACK"
+        assert data["status"] == "MODEL_UNAVAILABLE"
         assert data["is_ai_generated"] is False
         assert not data.get("proposed_patch_diff", "").strip(), \
-            "REFERENCE_FALLBACK must return empty diff — never a fabricated one"
+            "Model error must return empty diff — never a fabricated one"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

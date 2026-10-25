@@ -39,8 +39,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#080B12] text-text-primary flex flex-col font-sans selection:bg-accent-chaos/30 selection:text-white overflow-x-hidden">
-      {/* Global Cinematic Aurora & 3D Starfield Background */}
+    <div className="relative min-h-screen bg-[#111310] text-[#F3F0E7] flex flex-col font-sans selection:bg-[#C7F36B]/30 selection:text-[#171A12] overflow-x-hidden">
+      {/* Global Cinematic Ambient Background */}
       <AuroraStarfieldBackground />
 
       {/* 1. Cinematic Landing Page with GSAP Scroll Fracture Reveal */}
@@ -49,22 +49,22 @@ export const App: React.FC = () => {
       {/* 2. Existing Approved SRE Dashboard (Preserved 100% Intact) */}
       <section
         id="dashboard"
-        className="relative z-10 w-full min-h-screen flex flex-col border-t border-[#253148] shadow-2xl bg-[#080B12]"
+        className="relative z-10 w-full min-h-screen flex flex-col border-t border-[#363B30] shadow-2xl bg-[#111310]"
       >
         {/* Navigation Bridge Banner */}
-        <div className="bg-[#0B0F19] border-b border-[#253148]/80 px-4 sm:px-6 py-2 flex items-center justify-between text-xs font-mono text-text-muted">
+        <div className="bg-[#191C17] border-b border-[#363B30] px-4 sm:px-6 py-2 flex items-center justify-between text-xs font-mono text-[#85897D]">
           <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-white font-semibold uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-[#C7F36B]" />
+            <span className="text-[#F3F0E7] font-semibold uppercase tracking-wider">
               CHAOSPATCH DASHBOARD
             </span>
-            <span className="hidden sm:inline text-text-secondary">
+            <span className="hidden sm:inline text-[#B0B2A7]">
               · ACTIVE SRE WORKSPACE
             </span>
           </div>
           <button
             onClick={handleScrollToTop}
-            className="hover:text-accent-chaos transition-colors flex items-center space-x-1.5 py-0.5 px-2 rounded hover:bg-white/5 cursor-pointer text-[11px]"
+            className="hover:text-[#C7F36B] transition-colors flex items-center space-x-1.5 py-0.5 px-2 rounded hover:bg-[#22261F] cursor-pointer text-[11px]"
           >
             <span>↑ Return to Cinematic Reveal</span>
           </button>

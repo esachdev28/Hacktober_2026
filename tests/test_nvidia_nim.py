@@ -1,4 +1,4 @@
-"""Unit tests for NvidiaNIMProvider (mocked HTTP responses)."""
+"""Unit tests for NvidiaNIMProvider strictly targeting z-ai/glm-5.3-flash."""
 import pytest
 from unittest.mock import MagicMock, patch
 from openai import (
@@ -7,6 +7,7 @@ from openai import (
     RateLimitError,
     APITimeoutError,
 )
+from app.providers import get_inference_provider
 from app.providers.nvidia_nim import NvidiaNIMProvider
 from app.core.config import settings
 
@@ -25,21 +26,28 @@ def mock_openai_response():
     return _create_response
 
 
-def test_nvidia_nim_initialization():
-    """Verify provider initializes with configured model and base URL."""
+def test_nvidia_nim_strict_single_model_initialization():
+    """Verify provider initializes strictly with z-ai/glm-5.3-flash as sole model."""
     with patch.object(settings, "nvidia_api_key", "nvapi-test-key"), \
-         patch.object(settings, "nvidia_model", "google/gemma-4-31b-it"), \
+         patch.object(settings, "nvidia_model", "z-ai/glm-5.3-flash"), \
          patch.object(settings, "nvidia_base_url", "https://integrate.api.nvidia.com/v1"), \
-         patch.object(settings, "nvidia_timeout_seconds", 45.0):
+         patch.object(settings, "nvidia_timeout_seconds", 60.0):
         provider = NvidiaNIMProvider()
-        assert provider.model_id == "google/gemma-4-31b-it"
+        assert provider.model_id == "z-ai/glm-5.3-flash"
         assert provider.base_url == "https://integrate.api.nvidia.com/v1"
-        assert provider.timeout == 45.0
+        assert provider.timeout == 60.0
         assert provider.api_key == "nvapi-test-key"
 
 
+def test_factory_returns_only_nvidia_nim_sole_provider():
+    """Verify provider factory returns NvidiaNIMProvider and never any legacy or fallback provider."""
+    provider = get_inference_provider()
+    assert isinstance(provider, NvidiaNIMProvider)
+    assert provider.model_id == "z-ai/glm-5.3-flash"
+
+
 def test_nvidia_nim_successful_diagnosis_parsing(mock_openai_response):
-    """Verify provider parses structured JSON and extracts unified diff."""
+    """Verify provider parses structured JSON from z-ai/glm-5.3-flash and extracts unified diff."""
     json_payload = (
         "{\n"
         '  "title": "Fix ZeroDivisionError in calculation",\n'
@@ -64,7 +72,7 @@ def test_nvidia_nim_successful_diagnosis_parsing(mock_openai_response):
             assert "ZeroDivisionError" in result.title
             assert result.confidence == 0.96
             assert "calc.py" in result.proposed_patch_diff
-            assert result.provider.startswith("nvidia-nim:")
+            assert result.provider == "nvidia-nim:z-ai/glm-5.3-flash"
 
 
 def test_nvidia_nim_strips_markdown_code_fences(mock_openai_response):
@@ -106,12 +114,11 @@ def test_nvidia_nim_rejects_placeholder_diff(mock_openai_response):
         provider = NvidiaNIMProvider()
         with patch.object(provider.client.chat.completions, "create", return_value=mock_openai_response(stub_payload)):
             result = provider.generate_diagnosis_and_patch("scen", "evid", "src")
-            # Should sanitize dummy placeholder diff to empty string
             assert result.proposed_patch_diff == ""
 
 
 def test_nvidia_nim_authentication_error():
-    """Verify 401/403 AuthenticationError raises clear non-retryable message."""
+    """Verify 401/403 raises explicit MODEL_UNAVAILABLE message without useless retries."""
     mock_resp = MagicMock()
     mock_resp.status_code = 401
     auth_err = AuthenticationError("Unauthorized", response=mock_resp, body=None)
@@ -121,11 +128,12 @@ def test_nvidia_nim_authentication_error():
         with patch.object(provider.client.chat.completions, "create", side_effect=auth_err):
             with pytest.raises(RuntimeError) as exc_info:
                 provider.generate_diagnosis_and_patch("scen", "evid", "src")
+            assert "model_unavailable" in str(exc_info.value).lower()
             assert "authentication failed" in str(exc_info.value).lower()
 
 
 def test_nvidia_nim_model_not_found_error():
-    """Verify 404 NotFoundError raises clear message identifying model."""
+    """Verify 404 NotFoundError raises clear MODEL_UNAVAILABLE identifying model."""
     mock_resp = MagicMock()
     mock_resp.status_code = 404
     nf_err = NotFoundError("Model not found", response=mock_resp, body=None)
@@ -135,11 +143,12 @@ def test_nvidia_nim_model_not_found_error():
         with patch.object(provider.client.chat.completions, "create", side_effect=nf_err):
             with pytest.raises(RuntimeError) as exc_info:
                 provider.generate_diagnosis_and_patch("scen", "evid", "src")
-            assert "was not found" in str(exc_info.value)
+            assert "model_unavailable" in str(exc_info.value).lower()
+            assert "was not found" in str(exc_info.value).lower()
 
 
 def test_nvidia_nim_timeout_error():
-    """Verify timeout error returns actionable message."""
+    """Verify timeout error returns explicit MODEL_TIMEOUT message."""
     to_err = APITimeoutError(request=MagicMock())
 
     with patch.object(settings, "nvidia_api_key", "nvapi-test-key"):
@@ -147,16 +156,18 @@ def test_nvidia_nim_timeout_error():
         with patch.object(provider.client.chat.completions, "create", side_effect=to_err):
             with pytest.raises(RuntimeError) as exc_info:
                 provider.generate_diagnosis_and_patch("scen", "evid", "src")
+            assert "model_timeout" in str(exc_info.value).lower()
             assert "timed out" in str(exc_info.value).lower()
 
 
 def test_nvidia_nim_empty_response_handling(mock_openai_response):
-    """Verify empty response raises informative RuntimeError."""
+    """Verify empty response raises informative MODEL_FAILED RuntimeError."""
     with patch.object(settings, "nvidia_api_key", "nvapi-test-key"):
         provider = NvidiaNIMProvider()
         with patch.object(provider.client.chat.completions, "create", return_value=mock_openai_response("")):
             with pytest.raises(RuntimeError) as exc_info:
                 provider.generate_diagnosis_and_patch("scen", "evid", "src")
+            assert "model_failed" in str(exc_info.value).lower()
             assert "empty response" in str(exc_info.value).lower()
 
 
@@ -167,8 +178,8 @@ def test_nvidia_nim_health_check_success(mock_openai_response):
         with patch.object(provider.client.chat.completions, "create", return_value=mock_openai_response("pong")):
             res = provider.health_check()
             assert res["connected"] is True
-            assert res["model"] == provider.model_id
-            assert "pong" in res["message"].lower() or "connected" in res["message"].lower()
+            assert res["model"] == "z-ai/glm-5.3-flash"
+            assert "connected" in res["message"].lower()
 
 
 def test_nvidia_nim_health_check_missing_key():

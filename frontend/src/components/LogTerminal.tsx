@@ -74,7 +74,7 @@ export const LogTerminal: React.FC<LogTerminalProps> = ({ events, title = 'Real-
       </div>
 
       {/* Terminal Output */}
-      <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-1.5 bg-[#070A10]">
+      <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-1.5 bg-[#111310]">
         {filteredEvents.length === 0 ? (
           <div className="text-text-muted/60 text-center py-8">No events recorded yet.</div>
         ) : (

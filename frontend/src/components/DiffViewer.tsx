@@ -21,22 +21,29 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
   };
 
   const lines = diff ? diff.split('\n') : [];
-  const isPlaceholderOrEmpty = !diff.trim() || diff.includes('# Proposed candidate patch diff');
+  const isValidExecutableDiff = Boolean(
+    diff &&
+    diff.trim().length > 0 &&
+    !diff.includes('# Proposed candidate patch diff') &&
+    ((diff.includes('--- ') && diff.includes('+++ ')) || diff.includes('@@'))
+  );
 
   return (
-    <div className={`rounded-xl border border-canvas-border bg-[#080C14] overflow-hidden flex flex-col font-mono text-xs ${className}`}>
+    <div className={`rounded-xl border border-canvas-border bg-[#191C17] overflow-hidden flex flex-col font-mono text-xs ${className}`}>
       {/* Diff Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-canvas-surface/80 border-b border-canvas-border">
         <div className="flex items-center space-x-2 text-xs text-text-secondary truncate">
           <FileCode className="w-4 h-4 text-accent-chaos shrink-0" />
           <span className="font-semibold text-text-primary text-[11px] truncate">{title}</span>
-          <span className="text-[10px] text-text-muted">({lines.length} lines)</span>
+          <span className="text-[10px] text-text-muted">({isValidExecutableDiff ? `${lines.length} lines` : 'No executable patch'})</span>
         </div>
 
         <div className="flex items-center space-x-2 shrink-0">
           <button
             onClick={handleCopy}
-            className="flex items-center space-x-1.5 text-xs text-text-muted hover:text-text-primary px-2.5 py-1 rounded bg-canvas-card border border-canvas-border hover:border-canvas-hover transition"
+            disabled={!isValidExecutableDiff}
+            className="flex items-center space-x-1.5 text-xs text-text-muted hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 rounded bg-canvas-card border border-canvas-border hover:border-canvas-hover transition"
+            title={isValidExecutableDiff ? "Copy patch diff to clipboard" : "No executable patch to copy"}
           >
             {copied ? (
               <>
@@ -53,16 +60,16 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         </div>
       </div>
 
-      {/* Warning if placeholder */}
-      {isPlaceholderOrEmpty && (
-        <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 text-amber-400 text-[11px] flex items-center space-x-2">
+      {/* Notice if no executable diff */}
+      {!isValidExecutableDiff && (
+        <div className="px-4 py-2.5 bg-[#321D19] border-b border-[#FF6B55]/30 text-[#FF6B55] text-[11px] flex items-center space-x-2">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-          <span>Notice: Patch contains no executable changes or is a reference stub.</span>
+          <span>No executable patch generated. Model inference failed or returned an empty response.</span>
         </div>
       )}
 
       {/* Code Display */}
-      <div className="p-3 bg-[#05070B] overflow-x-auto max-h-96 text-xs leading-relaxed select-text">
+      <div className="p-3 bg-[#111310] overflow-x-auto max-h-96 text-xs leading-relaxed select-text">
         {lines.map((line, idx) => {
           let lineBg = '';
           let lineTextColor = 'text-text-secondary';
@@ -72,19 +79,19 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
             lineBg = 'bg-canvas-surface/60 font-bold';
             lineTextColor = 'text-text-primary';
           } else if (line.startsWith('diff --git')) {
-            lineBg = 'bg-[#121826] font-bold';
+            lineBg = 'bg-[#22261F] font-bold';
             lineTextColor = 'text-accent-chaos';
           } else if (line.startsWith('@@')) {
             lineBg = 'bg-accent-chaos/5 font-semibold';
             lineTextColor = 'text-accent-chaos/90';
           } else if (line.startsWith('+')) {
-            lineBg = 'bg-emerald-500/10';
-            lineTextColor = 'text-emerald-300';
-            borderAccent = 'border-l-2 border-emerald-500 pl-2';
+            lineBg = 'bg-[#202A16]';
+            lineTextColor = 'text-[#C7F36B]';
+            borderAccent = 'border-l-2 border-[#C7F36B] pl-2';
           } else if (line.startsWith('-')) {
-            lineBg = 'bg-rose-500/10';
-            lineTextColor = 'text-rose-300';
-            borderAccent = 'border-l-2 border-rose-500 pl-2';
+            lineBg = 'bg-[#321D19]';
+            lineTextColor = 'text-[#FF6B55]';
+            borderAccent = 'border-l-2 border-[#FF6B55] pl-2';
           }
 
           return (

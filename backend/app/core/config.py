@@ -21,22 +21,15 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./chaospatch.db"
     cors_origins: str = "http://localhost:5173"
 
-    # Hugging Face Inference (legacy — use if hf_token starts with "hf_")
-    hf_token: Optional[str] = None
-    hf_model_id: str = "Qwen/Qwen2.5-Coder-32B-Instruct"
-    hf_inference_endpoint: str = "https://router.huggingface.co/v1"
-    hf_provider: str = "featherless-ai"
-
-    # NVIDIA NIM Inference
+    # NVIDIA NIM Sole Inference Provider: z-ai/glm-5.3-flash
     nvidia_api_key: Optional[str] = None
-    nvidia_model: Optional[str] = None
-    nvidia_model_id: str = "google/gemma-4-31b-it"
+    nvidia_model: Optional[str] = "z-ai/glm-5.3-flash"
+    nvidia_model_id: str = "z-ai/glm-5.3-flash"
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     nvidia_timeout_seconds: float = 60.0
 
-    # Active provider: "auto" | "huggingface" | "nvidia"
-    # "auto" picks NVIDIA NIM if nvidia_api_key is set, else falls back to HF.
-    inference_provider: str = "auto"
+    # Strict single-provider lockdown
+    inference_provider: str = "nvidia"
 
     # Experiment Limits
     max_repair_attempts: int = 3
@@ -52,41 +45,23 @@ class Settings(BaseSettings):
         protected_namespaces = ()
 
     @property
-    def effective_hf_token(self) -> Optional[str]:
-        """Return hf_token only if it is a real HF token (starts with hf_)."""
-        if self.hf_token and self.hf_token.startswith("hf_"):
-            return self.hf_token
-        return None
-
-    @property
     def effective_nvidia_model(self) -> str:
-        """Return the configured NVIDIA model ID (prefers nvidia_model, then nvidia_model_id)."""
-        return (self.nvidia_model or self.nvidia_model_id or "google/gemma-4-31b-it").strip()
+        """Return the configured NVIDIA model ID (strictly z-ai/glm-5.3-flash)."""
+        return (self.nvidia_model or self.nvidia_model_id or "z-ai/glm-5.3-flash").strip()
 
     @property
     def has_nvidia_credentials(self) -> bool:
         return bool(self.nvidia_api_key and self.nvidia_api_key.startswith("nvapi-"))
 
     @property
-    def has_hf_credentials(self) -> bool:
-        return bool(self.effective_hf_token)
-
-    @property
     def has_inference_credentials(self) -> bool:
-        return self.has_nvidia_credentials or self.has_hf_credentials
+        return self.has_nvidia_credentials
 
     @property
     def active_provider(self) -> str:
-        """Resolve which provider will be used."""
-        if self.inference_provider == "nvidia":
-            return "nvidia"
-        if self.inference_provider == "huggingface":
-            return "huggingface"
-        # auto
+        """Resolve active provider: strictly NVIDIA NIM or none if unconfigured."""
         if self.has_nvidia_credentials:
             return "nvidia"
-        if self.has_hf_credentials:
-            return "huggingface"
         return "none"
 
     @property
