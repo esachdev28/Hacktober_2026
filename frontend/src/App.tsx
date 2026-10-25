@@ -11,6 +11,7 @@ import { WorkspacePage } from './pages/WorkspacePage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { EvidencePage } from './pages/EvidencePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { isApiConfigured } from './api/config';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
@@ -42,6 +43,18 @@ export const App: React.FC = () => {
     <div className="relative min-h-screen bg-[#111310] text-[#F3F0E7] flex flex-col font-sans selection:bg-[#C7F36B]/30 selection:text-[#171A12] overflow-x-hidden">
       {/* Global Cinematic Ambient Background */}
       <AuroraStarfieldBackground />
+
+      {/* Production Configuration Missing Banner */}
+      {!isApiConfigured() && (
+        <div className="sticky top-0 z-50 bg-[#321D19] border-b border-[#FF6B55]/50 px-4 py-2.5 text-center text-xs text-[#FF6B55] font-mono shadow-lg">
+          <span className="font-bold mr-2">⚠ CONFIGURATION REQUIRED:</span>
+          <span>VITE_API_BASE_URL is not configured in this production build. Please set </span>
+          <code className="text-[#F3F0E7] bg-black/40 px-1.5 py-0.5 rounded font-mono">
+            VITE_API_BASE_URL=https://hacktober-2026.onrender.com
+          </code>
+          <span> in Vercel Project Settings &gt; Environment Variables and redeploy.</span>
+        </div>
+      )}
 
       {/* 1. Cinematic Landing Page with GSAP Scroll Fracture Reveal */}
       <LandingPage onEnterDashboard={handleScrollToDashboard} />

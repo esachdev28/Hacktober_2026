@@ -39,9 +39,14 @@ class Settings(BaseSettings):
     model_temperature: float = 0.3
     model_max_tokens: int = 2048
 
+    # Optional PaaS / Deployment metadata
+    backend_url: Optional[str] = None
+    vite_api_base_url: Optional[str] = None
+
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
         protected_namespaces = ()
 
     @property

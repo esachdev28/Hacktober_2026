@@ -20,12 +20,11 @@ import {
   MonkeyLaunchResponse,
   MonkeyStatusResponse,
 } from '../types';
-
-const BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
+import { buildApiUrl, getApiBaseUrl } from './config';
 
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${BASE_URL}${endpoint}`;
+    const url = buildApiUrl(endpoint);
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -196,7 +195,7 @@ class ApiClient {
   }
 
   getPatchExportUrl(experimentId: number): string {
-    return `${BASE_URL}/repository/export-patch/${experimentId}`;
+    return buildApiUrl(`/repository/export-patch/${experimentId}`);
   }
 
   // Monkey Chaos Engine
@@ -221,7 +220,8 @@ class ApiClient {
     onEvent: (event: ExperimentEvent) => void,
     onError?: (err: any) => void
   ): () => void {
-    const eventSource = new EventSource(`${BASE_URL}/experiments/${experimentId}/stream`);
+    const streamUrl = buildApiUrl(`/experiments/${experimentId}/stream`);
+    const eventSource = new EventSource(streamUrl);
 
     eventSource.onmessage = (e) => {
       try {
@@ -265,3 +265,4 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+export { buildApiUrl, getApiBaseUrl } from './config';
