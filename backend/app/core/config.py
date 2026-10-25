@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_debug: bool = True
     database_url: str = "sqlite:///./chaospatch.db"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://localhost:4173"
+    cors_origin_regex: str = r"https://.*\.vercel\.app|https://.*\.onrender\.com|http://localhost:\d+|http://127\.0\.0\.1:\d+"
 
     # NVIDIA NIM Sole Inference Provider: z-ai/glm-5.3-flash
     nvidia_api_key: Optional[str] = None
