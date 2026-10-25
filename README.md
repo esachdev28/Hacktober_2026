@@ -1,5 +1,8 @@
 # CHAOSPATCH
 
+PPT LINK - https://drive.google.com/file/d/18pfnY0cQLda5LT9PmuLLsnBDcT4qRjzX/view?usp=sharing
+
+
 > **Inject failure. Let AI recover.**  
 > *The AI proposes the repair. The verification engine decides whether it worked.*
 
