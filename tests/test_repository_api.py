@@ -377,7 +377,8 @@ class TestProviderSuccess:
 
         from app.core.config import settings as _settings
 
-        with patch("app.api.routes.repository.get_inference_provider") as mock_factory:
+        with patch("app.api.routes.repository.get_inference_provider") as mock_factory, \
+             patch.object(_settings, "nvidia_api_key", "nvapi-testkey"):
             mock_provider = MagicMock()
             mock_provider.generate_diagnosis_and_patch.return_value = fake_diagnosis
             mock_factory.return_value = mock_provider
